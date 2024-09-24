@@ -17,6 +17,8 @@ security:
             - ROLE_USER_CHANGE_PWD
             - ROLE_USER_EDIT
             - ROLE_USER_DELETE
+            - ROLE_ZONE_DETAILS
+            - ROLE_ZONE_LIST
 
     firewalls:
         dev:
