@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
@@ -11,8 +13,11 @@ use App\Repository\RecipientRepository;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
+use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 
 #[ORM\Entity(repositoryClass: RecipientRepository::class)]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE', fields: ['phone'])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => 'recipient:get'],
@@ -24,7 +29,17 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
         new GetCollection(
             security: 'is_granted("ROLE_RECIPIENT_LIST")',
             provider: CollectionProvider::class
-        )
+        ),
+        new Post(
+            security: 'is_granted("ROLE_RECIPIENT_CREATE")',
+            denormalizationContext: ['groups' => 'recipient:post'],
+            processor: PersistProcessor::class,
+        ),
+        new Patch(
+            security: 'is_granted("ROLE_RECIPIENT_UPDATE")',
+            denormalizationContext: ['groups' => 'recipient:patch'],
+            processor: PersistProcessor::class,
+        ),
     ]
 )]
 class Recipient
@@ -39,15 +54,15 @@ class Recipient
     private ?string $id = null;
 
     #[ORM\Column(length: 120)]
-    #[Groups(groups: ['recipient:get'])]
+    #[Groups(groups: ['recipient:get', 'recipient:post', 'recipient:patch'])]
     private ?string $fullname = null;
 
     #[ORM\Column(length: 15, nullable: true)]
-    #[Groups(groups: ['recipient:get'])]
+    #[Groups(groups: ['recipient:get', 'recipient:post', 'recipient:patch'])]
     private ?string $phone = null;
 
     #[ORM\Column(length: 180, nullable: true)]
-    #[Groups(groups: ['recipient:get'])]
+    #[Groups(groups: ['recipient:get', 'recipient:post', 'recipient:patch'])]
     private ?string $email = null;
 
     #[ORM\Column]

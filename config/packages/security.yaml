@@ -23,6 +23,8 @@ security:
             - ROLE_ZONE_UPDATE
             - ROLE_RECIPIENT_DETAILS
             - ROLE_RECIPIENT_LIST
+            - ROLE_RECIPIENT_CREATE
+            - ROLE_RECIPIENT_UPDATE
 
     firewalls:
         dev:
