@@ -17,6 +17,7 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ZoneRepository::class)]
 #[ApiResource(
@@ -60,10 +61,14 @@ class Zone
     private ?string $id = null;
 
     #[ORM\Column(length: 30)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
     #[Groups(groups: ['zone:get', 'zone:post', 'zone:patch'])]
     private ?string $label = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
     #[Groups(groups: ['zone:get', 'zone:post', 'zone:patch'])]
     private ?string $description = null;
 
