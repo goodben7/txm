@@ -2,24 +2,46 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
+use ApiPlatform\Metadata\Get;
+use App\Doctrine\IdGenerator;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use App\Repository\UserRepository;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 #[ORM\HasLifecycleCallbacks]
+#[ApiResource(
+    normalizationContext: ['groups' => 'user:get'], 
+    operations:[
+        new Get(
+            security: 'is_granted("ROLE_USER_DETAILS")',
+            provider: ItemProvider::class
+        ),
+        new GetCollection(
+            security: 'is_granted("ROLE_USER_LIST")',
+            provider: CollectionProvider::class
+        )
+    ]
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     const ID_PREFIX = "US";
     const ROLE_ADMIN = 'ROLE_ADMIN';
 
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+    #[ORM\GeneratedValue( strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(IdGenerator::class)]
+    #[ORM\Column(length: 16)]
+    #[Groups(groups: ['user:get'])]
+    private ?string $id = null;
 
     #[ORM\Column(length: 180)]
     private ?string $email = null;
@@ -53,7 +75,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
     }
