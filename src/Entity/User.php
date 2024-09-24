@@ -44,12 +44,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Groups(groups: ['user:get'])]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups(groups: ['user:get'])]
     private array $roles = [];
 
     /**
@@ -61,18 +63,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $plainPassword;
 
     #[ORM\Column(length: 15, nullable: true)]
+    #[Groups(groups: ['user:get'])]
     private ?string $phone = null;
 
     #[ORM\Column(length: 120, nullable: true)]
+    #[Groups(groups: ['user:get'])]
     private ?string $displayName = null;
 
     #[ORM\Column]
+    #[Groups(groups: ['user:get'])]
     private ?bool $deleted = false;
 
     #[ORM\Column]
+    #[Groups(groups: ['user:get'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['user:get'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     public function getId(): ?string
