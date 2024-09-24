@@ -6,11 +6,14 @@ use App\Dto\CreateUserDto;
 use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
+use App\Dto\ChangePasswordDto;
+use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use App\State\CreateUserProcessor;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
+use App\State\ChangeUserPasswordProcessor;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
@@ -37,6 +40,12 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
             security: 'is_granted("ROLE_USER_CREATE")',
             input: CreateUserDto::class,
             processor: CreateUserProcessor::class,
+        ),
+        new Patch(
+            uriTemplate: "users/{id}/credentials",
+            security: 'is_granted("ROLE_USER_CHANGE_PWD", object)',
+            input: ChangePasswordDto::class,
+            processor: ChangeUserPasswordProcessor::class,
         ),
     ]
 )]
