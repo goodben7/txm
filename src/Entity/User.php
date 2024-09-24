@@ -13,10 +13,14 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use App\State\CreateUserProcessor;
 use App\State\DeleteUserProcessor;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use App\State\ChangeUserPasswordProcessor;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
@@ -61,6 +65,16 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
         )
     ]
 )]
+#[ApiFilter(SearchFilter::class, properties: [
+    'id' => 'exact',
+    'email' => 'exact',
+    'roles' => 'exact',
+    'phone' => 'exact',
+    'displayName' => 'ipartial',
+    'deleted' => 'exact'
+])]
+#[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
+#[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     const ID_PREFIX = "US";
