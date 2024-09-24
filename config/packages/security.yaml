@@ -17,6 +17,20 @@ security:
             - ROLE_USER_CHANGE_PWD
             - ROLE_USER_EDIT
             - ROLE_USER_DELETE
+            - ROLE_ZONE_DETAILS
+            - ROLE_ZONE_LIST
+            - ROLE_ZONE_CREATE
+            - ROLE_ZONE_UPDATE
+            - ROLE_RECIPIENT_DETAILS
+            - ROLE_RECIPIENT_LIST
+            - ROLE_RECIPIENT_CREATE
+            - ROLE_RECIPIENT_UPDATE
+            - ROLE_RECIPIENT_DELETE
+            - ROLE_CUSTOMER_DETAILS
+            - ROLE_CUSTOMER_LIST
+            - ROLE_CUSTOMER_CREATE
+            - ROLE_CUSTOMER_UPDATE
+            - ROLE_CUSTOMER_DELETE
 
     firewalls:
         dev:
