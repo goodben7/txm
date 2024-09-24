@@ -2,11 +2,31 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
 use App\Repository\RecipientRepository;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 
 #[ORM\Entity(repositoryClass: RecipientRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+#[ApiResource(
+    normalizationContext: ['groups' => 'recipient:get'],
+    operations: [
+        new Get(
+            security: 'is_granted("ROLE_RECIPIENT_DETAILS")',
+            provider: ItemProvider::class
+        ),
+        new GetCollection(
+            security: 'is_granted("ROLE_RECIPIENT_LIST")',
+            provider: CollectionProvider::class
+        )
+    ]
+)]
 class Recipient
 {
     const ID_PREFIX = "RE";
@@ -15,25 +35,32 @@ class Recipient
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(IdGenerator::class)]
     #[ORM\Column(length: 16)]
+    #[Groups(groups: ['recipient:get'])]
     private ?string $id = null;
 
     #[ORM\Column(length: 120)]
+    #[Groups(groups: ['recipient:get'])]
     private ?string $fullname = null;
 
     #[ORM\Column(length: 15, nullable: true)]
+    #[Groups(groups: ['recipient:get'])]
     private ?string $phone = null;
 
     #[ORM\Column(length: 180, nullable: true)]
+    #[Groups(groups: ['recipient:get'])]
     private ?string $email = null;
 
     #[ORM\Column]
+    #[Groups(groups: ['recipient:get'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['recipient:get'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column]
-    private ?bool $deleted = null;
+    #[Groups(groups: ['recipient:get'])]
+    private ?bool $deleted = false;
 
     public function getId(): ?string
     {
@@ -110,5 +137,19 @@ class Recipient
         $this->deleted = $deleted;
 
         return $this;
+    }
+
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    #[ORM\PrePersist]
+    public function buildCreatedAt(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTimeImmutable();
+        }
     }
 }
