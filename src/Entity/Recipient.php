@@ -6,11 +6,13 @@ use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use App\Repository\RecipientRepository;
+use App\State\DeleteRecipientProcessor;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
@@ -44,6 +46,10 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
             denormalizationContext: ['groups' => 'recipient:patch'],
             processor: PersistProcessor::class,
         ),
+        new Delete(
+            security: 'is_granted("ROLE_RECIPIENT_DELETE")',
+            processor: DeleteRecipientProcessor::class
+        )
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [

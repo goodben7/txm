@@ -25,6 +25,7 @@ security:
             - ROLE_RECIPIENT_LIST
             - ROLE_RECIPIENT_CREATE
             - ROLE_RECIPIENT_UPDATE
+            - ROLE_RECIPIENT_DELETE
 
     firewalls:
         dev:
