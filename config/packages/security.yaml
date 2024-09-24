@@ -13,6 +13,7 @@ security:
         ROLE_ADMIN: 
             - ROLE_USER_DETAILS
             - ROLE_USER_LIST
+            - ROLE_USER_CREATE
 
     firewalls:
         dev:

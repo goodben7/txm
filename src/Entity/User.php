@@ -2,10 +2,13 @@
 
 namespace App\Entity;
 
+use App\Dto\CreateUserDto;
 use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
+use ApiPlatform\Metadata\Post;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
+use App\State\CreateUserProcessor;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
@@ -17,6 +20,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE', fields: ['phone'])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => 'user:get'], 
@@ -28,7 +32,12 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
         new GetCollection(
             security: 'is_granted("ROLE_USER_LIST")',
             provider: CollectionProvider::class
-        )
+        ),
+        new Post(
+            security: 'is_granted("ROLE_USER_CREATE")',
+            input: CreateUserDto::class,
+            processor: CreateUserProcessor::class,
+        ),
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
