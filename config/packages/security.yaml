@@ -19,6 +19,8 @@ security:
             - ROLE_USER_DELETE
             - ROLE_ZONE_DETAILS
             - ROLE_ZONE_LIST
+            - ROLE_ZONE_CREATE
+            - ROLE_ZONE_UPDATE
 
     firewalls:
         dev:
