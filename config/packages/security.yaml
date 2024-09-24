@@ -29,6 +29,8 @@ security:
             - ROLE_CUSTOMER_DETAILS
             - ROLE_CUSTOMER_LIST
             - ROLE_CUSTOMER_CREATE
+            - ROLE_CUSTOMER_UPDATE
+            - ROLE_CUSTOMER_DELETE
 
     firewalls:
         dev:

@@ -6,11 +6,14 @@ use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
 use App\Dto\CreateCustomerDto;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CustomerRepository;
 use App\State\CreateCustomerProcessor;
+use App\State\DeleteCustomerProcessor;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -18,6 +21,7 @@ use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
+use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -37,6 +41,15 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
             security: 'is_granted("ROLE_CUSTOMER_CREATE")',
             input: CreateCustomerDto::class,
             processor: CreateCustomerProcessor::class,
+        ),
+        new Patch(
+            security: 'is_granted("ROLE_CUSTOMER_UPDATE")',
+            denormalizationContext: ['groups' => 'customer:patch'],
+            processor: PersistProcessor::class,
+        ),
+        new Delete(
+            security: 'is_granted("ROLE_CUSTOMER_DELETE")',
+            processor: DeleteCustomerProcessor::class
         )
     ]
 )]
@@ -63,19 +76,19 @@ class Customer
     private ?string $id = null;
 
     #[ORM\Column(length: 60)]
-    #[Groups(groups: ['customer:get'])]
+    #[Groups(groups: ['customer:get', 'customer:patch'])]
     private ?string $companyName = null;
 
     #[ORM\Column(length: 120)]
-    #[Groups(groups: ['customer:get'])]
+    #[Groups(groups: ['customer:get', 'customer:patch'])]
     private ?string $fullname = null;
 
     #[ORM\Column(length: 15, nullable: true)]
-    #[Groups(groups: ['customer:get'])]
+    #[Groups(groups: ['customer:get', 'customer:patch'])]
     private ?string $phone = null;
 
     #[ORM\Column(length: 180, nullable: true)]
-    #[Groups(groups: ['customer:get'])]
+    #[Groups(groups: ['customer:get', 'customer:patch'])]
     private ?string $email = null;
 
     #[ORM\Column]
