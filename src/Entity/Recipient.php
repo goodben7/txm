@@ -7,10 +7,14 @@ use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use App\Repository\RecipientRepository;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
@@ -42,6 +46,15 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
         ),
     ]
 )]
+#[ApiFilter(SearchFilter::class, properties: [
+    'id' => 'exact',
+    'fullname' => 'ipartial',
+    'phone' => 'ipartial',
+    'email' => 'ipartial',
+    'deleted' => 'exact'
+])]
+#[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
+#[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
 class Recipient
 {
     const ID_PREFIX = "RE";
