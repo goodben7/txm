@@ -10,6 +10,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[ORM\HasLifecycleCallbacks]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     const ID_PREFIX = "US";
@@ -35,6 +36,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    private ?string $plainPassword;
+
     #[ORM\Column(length: 15, nullable: true)]
     private ?string $phone = null;
 
@@ -42,7 +45,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $displayName = null;
 
     #[ORM\Column]
-    private ?bool $deleted = null;
+    private ?bool $deleted = false;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -181,6 +184,40 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public static function getAvailablesRoles(): array 
+    {
+        return [ 
+            'Administrateur' => self::ROLE_ADMIN
+        ];
+    }
+
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+    
+
+    /**
+     * Get the value of plainPassword
+     */ 
+    public function getPlainPassword()
+    {
+        return $this->plainPassword;
+    }
+
+    /**
+     * Set the value of plainPassword
+     *
+     * @return  self
+     */ 
+    public function setPlainPassword($plainPassword)
+    {
+        $this->plainPassword = $plainPassword;
 
         return $this;
     }
