@@ -20,6 +20,7 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RecipientRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -73,6 +74,8 @@ class Recipient
     private ?string $id = null;
 
     #[ORM\Column(length: 120)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
     #[Groups(groups: ['recipient:get', 'recipient:post', 'recipient:patch'])]
     private ?string $fullname = null;
 
@@ -81,6 +84,7 @@ class Recipient
     private ?string $phone = null;
 
     #[ORM\Column(length: 180, nullable: true)]
+    #[Assert\Email]
     #[Groups(groups: ['recipient:get', 'recipient:post', 'recipient:patch'])]
     private ?string $email = null;
 
