@@ -8,15 +8,18 @@ use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
 use App\Dto\ChangePasswordDto;
 use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use App\State\CreateUserProcessor;
+use App\State\DeleteUserProcessor;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use App\State\ChangeUserPasswordProcessor;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
+use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
@@ -47,6 +50,15 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
             input: ChangePasswordDto::class,
             processor: ChangeUserPasswordProcessor::class,
         ),
+        new Patch(
+            security: 'is_granted("ROLE_USER_EDIT")',
+            denormalizationContext: ['groups' => 'user:patch'],
+            processor: PersistProcessor::class,
+        ),
+        new Delete(
+            security: 'is_granted("ROLE_USER_DELETE")',
+            processor: DeleteUserProcessor::class
+        )
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -81,11 +93,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $plainPassword;
 
     #[ORM\Column(length: 15, nullable: true)]
-    #[Groups(groups: ['user:get'])]
+    #[Groups(groups: ['user:get', 'user:patch'])]
     private ?string $phone = null;
 
     #[ORM\Column(length: 120, nullable: true)]
-    #[Groups(groups: ['user:get'])]
+    #[Groups(groups: ['user:get', 'user:patch'])]
     private ?string $displayName = null;
 
     #[ORM\Column]
