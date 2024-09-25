@@ -5,6 +5,8 @@ namespace App\Entity;
 use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
@@ -63,7 +65,7 @@ class Zone
     #[ORM\Column(length: 30)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
-    #[Groups(groups: ['zone:get', 'zone:post', 'zone:patch'])]
+    #[Groups(groups: ['zone:get', 'zone:post', 'zone:patch', 'delivery:get'])]
     private ?string $label = null;
 
     #[ORM\Column(type: Types::TEXT)]
@@ -75,6 +77,17 @@ class Zone
     #[ORM\Column]
     #[Groups(groups: ['zone:get', 'zone:post', 'zone:patch'])]
     private ?bool $actived = true;
+
+    /**
+     * @var Collection<int, Delivery>
+     */
+    #[ORM\OneToMany(targetEntity: Delivery::class, mappedBy: 'zone')]
+    private Collection $deliveries;
+
+    public function __construct()
+    {
+        $this->deliveries = new ArrayCollection();
+    }
 
     public function getId(): ?string
     {
@@ -113,6 +126,36 @@ class Zone
     public function setActived(bool $actived): static
     {
         $this->actived = $actived;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Delivery>
+     */
+    public function getDeliveries(): Collection
+    {
+        return $this->deliveries;
+    }
+
+    public function addDelivery(Delivery $delivery): static
+    {
+        if (!$this->deliveries->contains($delivery)) {
+            $this->deliveries->add($delivery);
+            $delivery->setZone($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDelivery(Delivery $delivery): static
+    {
+        if ($this->deliveries->removeElement($delivery)) {
+            // set the owning side to null (unless already changed)
+            if ($delivery->getZone() === $this) {
+                $delivery->setZone(null);
+            }
+        }
 
         return $this;
     }

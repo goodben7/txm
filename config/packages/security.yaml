@@ -31,6 +31,16 @@ security:
             - ROLE_CUSTOMER_CREATE
             - ROLE_CUSTOMER_UPDATE
             - ROLE_CUSTOMER_DELETE
+            - ROLE_DELIVERY_DETAILS
+            - ROLE_DELIVERY_LIST
+            - ROLE_DELIVERY_CREATE
+            - ROLE_DELIVERY_UPDATE
+            - ROLE_DELIVERY_CANCEL
+            - ROLE_DELIVERY_VALIDATION
+            - ROLE_DELIVERY_PICKUP
+            - ROLE_DELIVERY_INPROGRESS
+            - ROLE_DELIVERY_DELAY
+            - ROLE_DELIVERY_DELIVER
 
     firewalls:
         dev:

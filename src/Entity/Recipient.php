@@ -7,6 +7,8 @@ use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -76,7 +78,7 @@ class Recipient
     #[ORM\Column(length: 120)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
-    #[Groups(groups: ['recipient:get', 'recipient:post', 'recipient:patch'])]
+    #[Groups(groups: ['recipient:get', 'recipient:post', 'recipient:patch', 'delivery:get'])]
     private ?string $fullname = null;
 
     #[ORM\Column(length: 15, nullable: true)]
@@ -99,6 +101,17 @@ class Recipient
     #[ORM\Column]
     #[Groups(groups: ['recipient:get'])]
     private ?bool $deleted = false;
+
+    /**
+     * @var Collection<int, Delivery>
+     */
+    #[ORM\OneToMany(targetEntity: Delivery::class, mappedBy: 'recipient')]
+    private Collection $deliveries;
+
+    public function __construct()
+    {
+        $this->deliveries = new ArrayCollection();
+    }
 
     public function getId(): ?string
     {
@@ -189,5 +202,35 @@ class Recipient
         if ($this->createdAt === null) {
             $this->createdAt = new \DateTimeImmutable();
         }
+    }
+
+    /**
+     * @return Collection<int, Delivery>
+     */
+    public function getDeliveries(): Collection
+    {
+        return $this->deliveries;
+    }
+
+    public function addDelivery(Delivery $delivery): static
+    {
+        if (!$this->deliveries->contains($delivery)) {
+            $this->deliveries->add($delivery);
+            $delivery->setRecipient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDelivery(Delivery $delivery): static
+    {
+        if ($this->deliveries->removeElement($delivery)) {
+            // set the owning side to null (unless already changed)
+            if ($delivery->getRecipient() === $this) {
+                $delivery->setRecipient(null);
+            }
+        }
+
+        return $this;
     }
 }
