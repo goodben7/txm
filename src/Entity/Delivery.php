@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Patch;
 use App\Dto\ValidateDeliveryDto;
 use Doctrine\ORM\Mapping as ORM;
 use App\Dto\InprogressDeliveryDto;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\State\DelayDeliveryProcessor;
 use App\Repository\DeliveryRepository;
@@ -25,7 +26,10 @@ use App\State\PickupDeliveryProcessor;
 use ApiPlatform\Metadata\GetCollection;
 use App\State\ValidateDeliveryProcessor;
 use App\State\InprogressDeliveryProcessor;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
@@ -97,6 +101,32 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
         ),
     ]
 )]
+#[ApiFilter(SearchFilter::class, properties: [
+    'id' => 'exact',
+    'pickupAddress' => 'ipartial',
+    'senderPhone' => 'ipartial',
+    'deliveryAddress' => 'ipartial',
+    'recipientPhone' => 'ipartial',
+    'status' => 'exact',
+    'description' => 'ipartial',
+    'type' => 'exact',
+    'township' => 'exact',
+    'zone' => 'exact',
+    'recipient' => 'exact',
+    'customer' => 'exact',
+    'createdBy' => 'exact',
+    'updatedBy' => 'exact',
+    'validatedBy' => 'exact',
+    'pickupedBy' => 'exact',
+    'inprogressBy' => 'exact',
+    'canceledBy' => 'exact',
+    'DelayedBy' => 'exact',
+    'trackingNumber' => 'exact',
+    'terminedBy' => 'exact'
+])]
+#[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt'])]
+#[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt'])]
+
 class Delivery
 {
     const ID_PREFIX = "DE";
