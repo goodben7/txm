@@ -2,107 +2,174 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
+use ApiPlatform\Metadata\Post;
+use App\Dto\CreateDeliveryDto;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\DeliveryRepository;
+use App\State\CreateDeliveryProcessor;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 
 #[ORM\Entity(repositoryClass: DeliveryRepository::class)]
+#[ApiResource(
+    normalizationContext: ['groups' => 'delivery:get'], 
+    operations:[
+        new Get(
+            security: 'is_granted("ROLE_DELIVERY_DETAILS")',
+            provider: ItemProvider::class
+        ),
+        new GetCollection(
+            security: 'is_granted("ROLE_DELIVERY_LIST")',
+            provider: CollectionProvider::class
+        ),
+        new Post(
+            security: 'is_granted("ROLE_DELIVERY_CREATE")',
+            input: CreateDeliveryDto::class,
+            processor: CreateDeliveryProcessor::class,
+        )
+    ]
+)]
 class Delivery
 {
     const ID_PREFIX = "DE";
+
+    const TYPE_PACKAGE = "P";
+    const TYPE_MAIL = "M";
+
+    const STATUS_PENDING = 'P';
+    const STATUS_VALIDATED = 'V';
+    const STATUS_PICKUPED = 'U';
+    const STATUS_INPROGRESS = 'I';
+    const STATUS_DELIVERED = 'D';
+    const STATUS_CANCELED = 'C';
+    
 
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(IdGenerator::class)]
     #[ORM\Column(length: 16)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $pickupAddress = null;
 
     #[ORM\Column(length: 15)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $senderPhone = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $deliveryAddress = null;
 
     #[ORM\Column(length: 15)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $recipientPhone = null;
 
     #[ORM\Column]
+    #[Groups(groups: ['delivery:get'])]
     private ?\DateTimeImmutable $deliveryDate = null;
 
     #[ORM\Column(length: 1)]
-    private ?string $status = null;
+    #[Groups(groups: ['delivery:get'])]
+    private ?string $status = self::STATUS_PENDING;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $message = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 1)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $type = null;
 
     #[ORM\Column(length: 120)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $township = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(groups: ['delivery:get'])]
     private ?Zone $zone = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(groups: ['delivery:get'])]
     private ?Recipient $recipient = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(groups: ['delivery:get'])]
     private ?Customer $customer = null;
 
     #[ORM\Column(length: 16)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $createdBy = null;
 
     #[ORM\Column]
+    #[Groups(groups: ['delivery:get'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $updatedBy = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $validatedBy = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?\DateTimeImmutable $validatedAt = null;
 
     #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $pickupedBy = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?\DateTimeImmutable $pickupedAt = null;
 
     #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $inprogressBy = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?\DateTimeImmutable $inprogressAt = null;
 
     #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $canceledBy = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?\DateTimeImmutable $canceledAt = null;
 
     #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $DelayedBy = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
     private ?\DateTimeImmutable $DelayedAt = null;
 
     #[ORM\Column(length: 16)]
+    #[Groups(groups: ['delivery:get'])]
     private ?string $trackingNumber = null;
 
     public function getId(): ?string
