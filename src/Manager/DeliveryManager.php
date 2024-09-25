@@ -79,7 +79,7 @@ class DeliveryManager
     public function cancel(Delivery $delivery, string $message) : Delivery
     {
 
-        if ( !in_array($delivery->getStatus(), [Delivery::STATUS_PENDING, Delivery::STATUS_VALIDATED, Delivery::STATUS_PICKUPED, Delivery::STATUS_INPROGRESS])){
+        if ( !in_array($delivery->getStatus(), [Delivery::STATUS_PENDING, Delivery::STATUS_VALIDATED, Delivery::STATUS_PICKUPED, Delivery::STATUS_INPROGRESS, Delivery::STATUS_DELAYED])){
             throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
         }
 
@@ -103,7 +103,7 @@ class DeliveryManager
     public function validate(Delivery $delivery) : Delivery
     {
 
-        if($delivery->getStatus() != Delivery::STATUS_PENDING){
+        if ( !in_array($delivery->getStatus(), [Delivery::STATUS_PENDING, Delivery::STATUS_DELAYED])){
             throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
         }
 
@@ -138,6 +138,53 @@ class DeliveryManager
         $delivery->setStatus(Delivery::STATUS_PICKUPED);
         $delivery->setPickupedAt(new \DateTimeImmutable('now'));
         $delivery->setPickupedBy($user->getId());
+
+        $this->em->persist($delivery);
+        $this->em->flush();
+
+        return $delivery; 
+
+    }
+
+    public function inprogress(Delivery $delivery) : Delivery
+    {
+
+        if($delivery->getStatus() != Delivery::STATUS_PICKUPED){
+            throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
+        }
+
+        $email = $this->security->getUser()->getUserIdentifier();
+
+        /** @var User|null $user */
+        $user = $this->userRepository->findOneBy(['email' => $email]);
+
+        $delivery->setStatus(Delivery::STATUS_INPROGRESS);
+        $delivery->setInprogressAt(new \DateTimeImmutable('now'));
+        $delivery->setInprogressBy($user->getId());
+
+        $this->em->persist($delivery);
+        $this->em->flush();
+
+        return $delivery; 
+
+    }
+
+    public function delay(Delivery $delivery, \DateTimeImmutable $delayedAt, string $message) : Delivery
+    {
+
+        if ( !in_array($delivery->getStatus(), [Delivery::STATUS_VALIDATED, Delivery::STATUS_PICKUPED, Delivery::STATUS_INPROGRESS])){
+            throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
+        }
+
+        $email = $this->security->getUser()->getUserIdentifier();
+
+        /** @var User|null $user */
+        $user = $this->userRepository->findOneBy(['email' => $email]);
+
+        $delivery->setStatus(Delivery::STATUS_DELAYED);
+        $delivery->setMessage($message);
+        $delivery->setDelayedAt($delayedAt);
+        $delivery->setDelayedBy($user->getId());
 
         $this->em->persist($delivery);
         $this->em->flush();

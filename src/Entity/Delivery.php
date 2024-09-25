@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
+use App\Dto\DelayDeliveryDto;
 use ApiPlatform\Metadata\Post;
 use App\Dto\CancelDeliveryDto;
 use App\Dto\CreateDeliveryDto;
@@ -12,13 +13,16 @@ use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Patch;
 use App\Dto\ValidateDeliveryDto;
 use Doctrine\ORM\Mapping as ORM;
+use App\Dto\InprogressDeliveryDto;
 use ApiPlatform\Metadata\ApiResource;
+use App\State\DelayDeliveryProcessor;
 use App\Repository\DeliveryRepository;
 use App\State\CancelDeliveryProcessor;
 use App\State\CreateDeliveryProcessor;
 use App\State\PickupDeliveryProcessor;
 use ApiPlatform\Metadata\GetCollection;
 use App\State\ValidateDeliveryProcessor;
+use App\State\InprogressDeliveryProcessor;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
@@ -68,6 +72,20 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
             processor: PickupDeliveryProcessor::class,
             status: 200
         ),
+        new Post(
+            uriTemplate: '/deliveries/inprogress',
+            security: 'is_granted("ROLE_DELIVERY_INPROGRESS")',
+            input: InprogressDeliveryDto::class,
+            processor: InprogressDeliveryProcessor::class,
+            status: 200
+        ),
+        new Post(
+            uriTemplate: '/deliveries/delay',
+            security: 'is_granted("ROLE_DELIVERY_DELAY")',
+            input: DelayDeliveryDto::class,
+            processor: DelayDeliveryProcessor::class,
+            status: 200
+        ),
     ]
 )]
 class Delivery
@@ -81,7 +99,8 @@ class Delivery
     const STATUS_VALIDATED = 'V';
     const STATUS_PICKUPED = 'U';
     const STATUS_INPROGRESS = 'I';
-    const STATUS_DELIVERED = 'D';
+    const STATUS_DELAYED = 'D';
+    const STATUS_TERMINATED = 'T';
     const STATUS_CANCELED = 'C';
     
 
