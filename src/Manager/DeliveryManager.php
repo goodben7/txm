@@ -100,4 +100,27 @@ class DeliveryManager
 
     }
 
+    public function validate(Delivery $delivery) : Delivery
+    {
+
+        if($delivery->getStatus() != Delivery::STATUS_PENDING){
+            throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
+        }
+
+        $email = $this->security->getUser()->getUserIdentifier();
+
+        /** @var User|null $user */
+        $user = $this->userRepository->findOneBy(['email' => $email]);
+
+        $delivery->setStatus(Delivery::STATUS_VALIDATED);
+        $delivery->setValidatedAt(new \DateTimeImmutable('now'));
+        $delivery->setValidatedBy($user->getId());
+
+        $this->em->persist($delivery);
+        $this->em->flush();
+
+        return $delivery; 
+
+    }
+
 }

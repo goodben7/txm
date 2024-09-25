@@ -9,12 +9,14 @@ use App\Dto\CancelDeliveryDto;
 use App\Dto\CreateDeliveryDto;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Patch;
+use App\Dto\ValidateDeliveryDto;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\DeliveryRepository;
 use App\State\CancelDeliveryProcessor;
 use App\State\CreateDeliveryProcessor;
 use ApiPlatform\Metadata\GetCollection;
+use App\State\ValidateDeliveryProcessor;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
@@ -48,6 +50,13 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
             security: 'is_granted("ROLE_DELIVERY_CANCEL")',
             input: CancelDeliveryDto::class,
             processor: CancelDeliveryProcessor::class,
+            status: 200
+        ),
+        new Post(
+            uriTemplate: '/deliveries/validations',
+            security: 'is_granted("ROLE_DELIVERY_VALIDATION")',
+            input: ValidateDeliveryDto::class,
+            processor: ValidateDeliveryProcessor::class,
             status: 200
         ),
     ]
