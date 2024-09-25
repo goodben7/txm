@@ -5,12 +5,14 @@ namespace App\Entity;
 use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
+use App\Dto\CancelDeliveryDto;
 use App\Dto\CreateDeliveryDto;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\DeliveryRepository;
+use App\State\CancelDeliveryProcessor;
 use App\State\CreateDeliveryProcessor;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
@@ -40,7 +42,14 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
             security: 'is_granted("ROLE_DELIVERY_UPDATE")',
             denormalizationContext: ['groups' => 'delivery:patch'],
             processor: PersistProcessor::class,
-        )
+        ),
+        new Post(
+            uriTemplate: '/deliveries/cancellations',
+            security: 'is_granted("ROLE_DELIVERY_CANCEL")',
+            input: CancelDeliveryDto::class,
+            processor: CancelDeliveryProcessor::class,
+            status: 200
+        ),
     ]
 )]
 class Delivery

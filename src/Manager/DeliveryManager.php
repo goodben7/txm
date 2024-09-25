@@ -9,6 +9,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
 use Symfony\Bundle\SecurityBundle\Security;
+use App\Exception\InvalidActionInputException;
 
 class DeliveryManager
 {
@@ -73,6 +74,30 @@ class DeliveryManager
         }
 
         return $delivery; 
+    }
+
+    public function cancel(Delivery $delivery, string $message) : Delivery
+    {
+
+        if ( !in_array($delivery->getStatus(), [Delivery::STATUS_PENDING, Delivery::STATUS_VALIDATED, Delivery::STATUS_PICKUPED, Delivery::STATUS_INPROGRESS])){
+            throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
+        }
+
+        $email = $this->security->getUser()->getUserIdentifier();
+
+        /** @var User|null $user */
+        $user = $this->userRepository->findOneBy(['email' => $email]);
+
+        $delivery->setStatus(Delivery::STATUS_CANCELED);
+        $delivery->setMessage($message);
+        $delivery->setCanceledAt(new \DateTimeImmutable('now'));
+        $delivery->setCanceledBy($user->getId());
+
+        $this->em->persist($delivery);
+        $this->em->flush();
+
+        return $delivery; 
+
     }
 
 }
