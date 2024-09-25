@@ -8,6 +8,8 @@ use ApiPlatform\Metadata\Post;
 use App\Dto\CreateCustomerDto;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -103,6 +105,17 @@ class Customer
     #[Groups(groups: ['customer:get'])]
     private ?bool $deleted = false;
 
+    /**
+     * @var Collection<int, Delivery>
+     */
+    #[ORM\OneToMany(targetEntity: Delivery::class, mappedBy: 'customer')]
+    private Collection $deliveries;
+
+    public function __construct()
+    {
+        $this->deliveries = new ArrayCollection();
+    }
+
     public function getId(): ?string
     {
         return $this->id;
@@ -188,6 +201,36 @@ class Customer
     public function setDeleted(bool $deleted): static
     {
         $this->deleted = $deleted;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Delivery>
+     */
+    public function getDeliveries(): Collection
+    {
+        return $this->deliveries;
+    }
+
+    public function addDelivery(Delivery $delivery): static
+    {
+        if (!$this->deliveries->contains($delivery)) {
+            $this->deliveries->add($delivery);
+            $delivery->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDelivery(Delivery $delivery): static
+    {
+        if ($this->deliveries->removeElement($delivery)) {
+            // set the owning side to null (unless already changed)
+            if ($delivery->getCustomer() === $this) {
+                $delivery->setCustomer(null);
+            }
+        }
 
         return $this;
     }
