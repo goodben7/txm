@@ -7,6 +7,7 @@ use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
 use App\Dto\CreateDeliveryDto;
 use Doctrine\DBAL\Types\Types;
+use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\DeliveryRepository;
@@ -15,8 +16,10 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
+use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 
 #[ORM\Entity(repositoryClass: DeliveryRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => 'delivery:get'], 
     operations:[
@@ -32,6 +35,11 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
             security: 'is_granted("ROLE_DELIVERY_CREATE")',
             input: CreateDeliveryDto::class,
             processor: CreateDeliveryProcessor::class,
+        ),
+        new Patch(
+            security: 'is_granted("ROLE_DELIVERY_UPDATE")',
+            denormalizationContext: ['groups' => 'delivery:patch'],
+            processor: PersistProcessor::class,
         )
     ]
 )]
@@ -58,19 +66,19 @@ class Delivery
     private ?string $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $pickupAddress = null;
 
     #[ORM\Column(length: 15)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $senderPhone = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $deliveryAddress = null;
 
     #[ORM\Column(length: 15)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $recipientPhone = null;
 
     #[ORM\Column]
@@ -86,30 +94,30 @@ class Delivery
     private ?string $message = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 1)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $type = null;
 
     #[ORM\Column(length: 120)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $township = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?Zone $zone = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?Recipient $recipient = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?Customer $customer = null;
 
     #[ORM\Column(length: 16)]
@@ -511,5 +519,11 @@ class Delivery
         $this->trackingNumber = $trackingNumber;
 
         return $this;
+    }
+
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 }

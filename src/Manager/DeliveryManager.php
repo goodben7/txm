@@ -7,6 +7,7 @@ use App\Entity\Delivery;
 use App\Model\NewDeliveryModel;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Exception\UnavailableDataException;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class DeliveryManager
@@ -61,6 +62,17 @@ class DeliveryManager
         $randomLetters = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 3));
 
         return  "{$prefix}{$datePart}{$timePart}{$randomLetters}";
+    }
+
+    private function findDelivery(string $deliveryId): Delivery 
+    {
+        $delivery = $this->em->find(Delivery::class, $deliveryId);
+
+        if (null === $delivery) {
+            throw new UnavailableDataException(sprintf('cannot find delivery with id: %s', $deliveryId));
+        }
+
+        return $delivery; 
     }
 
 }
