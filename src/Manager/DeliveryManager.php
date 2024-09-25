@@ -193,4 +193,27 @@ class DeliveryManager
 
     }
 
+    public function finish(Delivery $delivery) : Delivery
+    {
+
+        if($delivery->getStatus() != Delivery::STATUS_INPROGRESS){
+            throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
+        }
+
+        $email = $this->security->getUser()->getUserIdentifier();
+
+        /** @var User|null $user */
+        $user = $this->userRepository->findOneBy(['email' => $email]);
+
+        $delivery->setStatus(Delivery::STATUS_TERMINATED);
+        $delivery->setTerminedAt(new \DateTimeImmutable('now'));
+        $delivery->setTerminedBy($user->getId());
+
+        $this->em->persist($delivery);
+        $this->em->flush();
+
+        return $delivery; 
+
+    }
+
 }

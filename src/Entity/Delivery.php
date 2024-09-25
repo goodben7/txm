@@ -8,6 +8,7 @@ use App\Dto\DelayDeliveryDto;
 use ApiPlatform\Metadata\Post;
 use App\Dto\CancelDeliveryDto;
 use App\Dto\CreateDeliveryDto;
+use App\Dto\FinishDeliveryDto;
 use App\Dto\PickupDeliveryDto;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Patch;
@@ -19,6 +20,7 @@ use App\State\DelayDeliveryProcessor;
 use App\Repository\DeliveryRepository;
 use App\State\CancelDeliveryProcessor;
 use App\State\CreateDeliveryProcessor;
+use App\State\FinishDeliveryProcessor;
 use App\State\PickupDeliveryProcessor;
 use ApiPlatform\Metadata\GetCollection;
 use App\State\ValidateDeliveryProcessor;
@@ -84,6 +86,13 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
             security: 'is_granted("ROLE_DELIVERY_DELAY")',
             input: DelayDeliveryDto::class,
             processor: DelayDeliveryProcessor::class,
+            status: 200
+        ),
+        new Post(
+            uriTemplate: '/deliveries/finish',
+            security: 'is_granted("ROLE_DELIVERY_DELIVER")',
+            input: FinishDeliveryDto::class,
+            processor: FinishDeliveryProcessor::class,
             status: 200
         ),
     ]
@@ -225,6 +234,14 @@ class Delivery
     #[ORM\Column(length: 16)]
     #[Groups(groups: ['delivery:get'])]
     private ?string $trackingNumber = null;
+
+    #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
+    private ?string $terminedBy = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
+    private ?\DateTimeImmutable $terminedAt = null;
 
     public function getId(): ?string
     {
@@ -571,5 +588,29 @@ class Delivery
     public function updateUpdatedAt(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    public function getTerminedBy(): ?string
+    {
+        return $this->terminedBy;
+    }
+
+    public function setTerminedBy(?string $terminedBy): static
+    {
+        $this->terminedBy = $terminedBy;
+
+        return $this;
+    }
+
+    public function getTerminedAt(): ?\DateTimeImmutable
+    {
+        return $this->terminedAt;
+    }
+
+    public function setTerminedAt(?\DateTimeImmutable $terminedAt): static
+    {
+        $this->terminedAt = $terminedAt;
+
+        return $this;
     }
 }

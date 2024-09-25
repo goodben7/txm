@@ -65,7 +65,7 @@ class Zone
     #[ORM\Column(length: 30)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
-    #[Groups(groups: ['zone:get', 'zone:post', 'zone:patch'])]
+    #[Groups(groups: ['zone:get', 'zone:post', 'zone:patch', 'delivery:get'])]
     private ?string $label = null;
 
     #[ORM\Column(type: Types::TEXT)]

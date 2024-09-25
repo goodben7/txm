@@ -78,11 +78,11 @@ class Customer
     private ?string $id = null;
 
     #[ORM\Column(length: 60)]
-    #[Groups(groups: ['customer:get', 'customer:patch'])]
+    #[Groups(groups: ['customer:get', 'customer:patch', 'delivery:get'])]
     private ?string $companyName = null;
 
     #[ORM\Column(length: 120)]
-    #[Groups(groups: ['customer:get', 'customer:patch'])]
+    #[Groups(groups: ['customer:get', 'customer:patch', 'delivery:get'])]
     private ?string $fullname = null;
 
     #[ORM\Column(length: 15, nullable: true)]

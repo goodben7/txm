@@ -78,7 +78,7 @@ class Recipient
     #[ORM\Column(length: 120)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
-    #[Groups(groups: ['recipient:get', 'recipient:post', 'recipient:patch'])]
+    #[Groups(groups: ['recipient:get', 'recipient:post', 'recipient:patch', 'delivery:get'])]
     private ?string $fullname = null;
 
     #[ORM\Column(length: 15, nullable: true)]
