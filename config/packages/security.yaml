@@ -37,6 +37,7 @@ security:
             - ROLE_DELIVERY_UPDATE
             - ROLE_DELIVERY_CANCEL
             - ROLE_DELIVERY_VALIDATION
+            - ROLE_DELIVERY_PICKUP
 
     firewalls:
         dev:

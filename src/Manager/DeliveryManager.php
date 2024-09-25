@@ -123,4 +123,27 @@ class DeliveryManager
 
     }
 
+    public function pickup(Delivery $delivery) : Delivery
+    {
+
+        if($delivery->getStatus() != Delivery::STATUS_VALIDATED){
+            throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
+        }
+
+        $email = $this->security->getUser()->getUserIdentifier();
+
+        /** @var User|null $user */
+        $user = $this->userRepository->findOneBy(['email' => $email]);
+
+        $delivery->setStatus(Delivery::STATUS_PICKUPED);
+        $delivery->setPickupedAt(new \DateTimeImmutable('now'));
+        $delivery->setPickupedBy($user->getId());
+
+        $this->em->persist($delivery);
+        $this->em->flush();
+
+        return $delivery; 
+
+    }
+
 }
