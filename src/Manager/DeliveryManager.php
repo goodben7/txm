@@ -183,6 +183,7 @@ class DeliveryManager
 
         $delivery->setStatus(Delivery::STATUS_DELAYED);
         $delivery->setMessage($message);
+        $delivery->setDeliveryDate($delayedAt);
         $delivery->setDelayedAt($delayedAt);
         $delivery->setDelayedBy($user->getId());
 
