@@ -111,9 +111,16 @@ class Customer
     #[ORM\OneToMany(targetEntity: Delivery::class, mappedBy: 'customer')]
     private Collection $deliveries;
 
+    /**
+     * @var Collection<int, Address>
+     */
+    #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'customer')]
+    private Collection $addresses;
+
     public function __construct()
     {
         $this->deliveries = new ArrayCollection();
+        $this->addresses = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -229,6 +236,36 @@ class Customer
             // set the owning side to null (unless already changed)
             if ($delivery->getCustomer() === $this) {
                 $delivery->setCustomer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Address>
+     */
+    public function getAddresses(): Collection
+    {
+        return $this->addresses;
+    }
+
+    public function addAddress(Address $address): static
+    {
+        if (!$this->addresses->contains($address)) {
+            $this->addresses->add($address);
+            $address->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAddress(Address $address): static
+    {
+        if ($this->addresses->removeElement($address)) {
+            // set the owning side to null (unless already changed)
+            if ($address->getCustomer() === $this) {
+                $address->setCustomer(null);
             }
         }
 
