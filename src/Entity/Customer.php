@@ -129,6 +129,7 @@ class Customer
      * @var Collection<int, Recipient>
      */
     #[ORM\OneToMany(targetEntity: Recipient::class, mappedBy: 'customer')]
+    #[Groups(groups: ['customer:get'])]
     private Collection $recipients;
 
     public function __construct()
