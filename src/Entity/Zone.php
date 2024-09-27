@@ -78,6 +78,17 @@ class Zone
     #[Groups(groups: ['zone:get', 'zone:post', 'zone:patch'])]
     private ?bool $actived = true;
 
+    /**
+     * @var Collection<int, Township>
+     */
+    #[ORM\OneToMany(targetEntity: Township::class, mappedBy: 'zone')]
+    private Collection $townships;
+
+    public function __construct()
+    {
+        $this->townships = new ArrayCollection();
+    }
+
     public function getId(): ?string
     {
         return $this->id;
@@ -115,6 +126,36 @@ class Zone
     public function setActived(bool $actived): static
     {
         $this->actived = $actived;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Township>
+     */
+    public function getTownships(): Collection
+    {
+        return $this->townships;
+    }
+
+    public function addTownship(Township $township): static
+    {
+        if (!$this->townships->contains($township)) {
+            $this->townships->add($township);
+            $township->setZone($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTownship(Township $township): static
+    {
+        if ($this->townships->removeElement($township)) {
+            // set the owning side to null (unless already changed)
+            if ($township->getZone() === $this) {
+                $township->setZone(null);
+            }
+        }
 
         return $this;
     }
