@@ -28,6 +28,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE', fields: ['phone'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE2', fields: ['phone2'])]
 #[ApiResource(
     normalizationContext: ['groups' => 'customer:get'], 
     operations:[
@@ -60,6 +61,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'companyName' => 'ipartial',
     'fullname' => 'ipartial',
     'phone' => 'ipartial',
+    'phone2' => 'ipartial',
     'email' => 'ipartial',
     'deleted' => 'exact'
 ])]
@@ -88,6 +90,10 @@ class Customer
     #[ORM\Column(length: 15, nullable: true)]
     #[Groups(groups: ['customer:get', 'customer:patch'])]
     private ?string $phone = null;
+
+    #[ORM\Column(length: 15, nullable: true)]
+    #[Groups(groups: ['customer:get', 'customer:patch'])]
+    private ?string $phone2 = null;
 
     #[ORM\Column(length: 180, nullable: true)]
     #[Groups(groups: ['customer:get', 'customer:patch'])]
@@ -269,6 +275,26 @@ class Customer
                 $address->setCustomer(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * Get the value of phone2
+     */ 
+    public function getPhone2()
+    {
+        return $this->phone2;
+    }
+
+    /**
+     * Set the value of phone2
+     *
+     * @return  self
+     */ 
+    public function setPhone2($phone2)
+    {
+        $this->phone2 = $phone2;
 
         return $this;
     }

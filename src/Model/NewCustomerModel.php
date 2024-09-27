@@ -22,6 +22,8 @@ class NewCustomerModel
 
         public ?string $phone = null,
 
+        public ?string $phone2 = null,
+
         #[Assert\Email]
         public ?string $email = null
 

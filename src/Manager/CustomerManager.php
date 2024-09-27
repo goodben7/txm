@@ -23,6 +23,7 @@ class CustomerManager
         $customer->setCompanyName($model->companyName);
         $customer->setFullname($model->fullname);
         $customer->setPhone($model->phone);
+        $customer->setPhone2($model->phone2);
         $customer->setEmail($model->email);
         $customer->setCreatedAt(new \DateTimeImmutable('now'));
 

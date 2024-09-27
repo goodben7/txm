@@ -25,6 +25,7 @@ class CreateCustomerProcessor implements ProcessorInterface
             $data->fullname,
             $data->addresses, 
             $data->phone, 
+            $data->phone2, 
             $data->email
         );
  
