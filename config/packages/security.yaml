@@ -45,6 +45,10 @@ security:
             - ROLE_ADDRESS_LIST
             - ROLE_ADDRESS_CREATE
             - ROLE_ADDRESS_UPDATE
+            - ROLE_TOWNSHIP_DETAILS
+            - ROLE_TOWNSHIP_LIST
+            - ROLE_TOWNSHIP_CREATE
+            - ROLE_TOWNSHIP_UPDATE
 
     firewalls:
         dev:
