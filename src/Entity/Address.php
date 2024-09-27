@@ -52,25 +52,29 @@ class Address
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(groups: ['customer:get', 'address:get'])]
+    #[Groups(groups: ['customer:get', 'address:get', 'recipient:get'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 60)]
-    #[Groups(groups: ['customer:get', 'address:get', 'address:post', 'address:patch'])]
+    #[Groups(groups: ['customer:get', 'address:get', 'address:post', 'address:patch', 'recipient:get'])]
     private ?string $label = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(groups: ['customer:get', 'address:get', 'address:post', 'address:patch'])]
+    #[Groups(groups: ['customer:get', 'address:get', 'address:post', 'address:patch', 'recipient:get'])]
     private ?string $address = null;
 
     #[ORM\Column]
-    #[Groups(groups: ['customer:get', 'address:get', 'address:post', 'address:patch'])]
+    #[Groups(groups: ['customer:get', 'address:get', 'address:post', 'address:patch', 'recipient:get'])]
     private ?bool $isMain = false;
 
     #[ORM\ManyToOne(inversedBy: 'addresses')]
     #[ORM\JoinColumn(nullable: true)]
     #[Groups(groups: ['address:post'])]
     private ?Customer $customer = null;
+
+    #[ORM\ManyToOne(inversedBy: 'addresses')]
+    #[Groups(groups: ['address:post'])]
+    private ?Recipient $recipient = null;
 
     public function getId(): ?int
     {
@@ -121,6 +125,18 @@ class Address
     public function setCustomer(?Customer $customer): static
     {
         $this->customer = $customer;
+
+        return $this;
+    }
+
+    public function getRecipient(): ?Recipient
+    {
+        return $this->recipient;
+    }
+
+    public function setRecipient(?Recipient $recipient): static
+    {
+        $this->recipient = $recipient;
 
         return $this;
     }

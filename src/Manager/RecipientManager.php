@@ -3,6 +3,7 @@
 namespace App\Manager;
 
 use App\Entity\Recipient;
+use App\Model\NewRecipientModel;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
 use App\Exception\UnauthorizedActionException;
@@ -13,6 +14,27 @@ class RecipientManager
         private EntityManagerInterface $em, 
     )
     {
+    }
+
+    public function createFrom(NewRecipientModel $model): Recipient {
+
+        $r = new Recipient();
+    
+        $r->setCustomer($model->customer);
+        $r->setFullname($model->fullname);
+        $r->setPhone($model->phone);
+        $r->setPhone2($model->phone2);
+        $r->setEmail($model->email);
+        $r->setCreatedAt(new \DateTimeImmutable('now'));
+
+        foreach ($model->addresses as $addr) {
+            $r->addAddress($addr);
+        }
+
+        $this->em->persist($r);
+        $this->em->flush();
+        
+        return $r;
     }
 
 

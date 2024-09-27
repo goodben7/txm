@@ -6,27 +6,30 @@ use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
+use App\Dto\CreateRecipientDto;
 use ApiPlatform\Metadata\Delete;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use App\Repository\RecipientRepository;
+use App\State\CreateRecipientProcessor;
 use App\State\DeleteRecipientProcessor;
+use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use Doctrine\Common\Collections\ArrayCollection;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
-use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 
 #[ORM\Entity(repositoryClass: RecipientRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE', fields: ['phone'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE2', fields: ['phone2'])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => 'recipient:get'],
@@ -41,8 +44,8 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Post(
             security: 'is_granted("ROLE_RECIPIENT_CREATE")',
-            denormalizationContext: ['groups' => 'recipient:post'],
-            processor: PersistProcessor::class,
+            input: CreateRecipientDto::class,
+            processor: CreateRecipientProcessor::class,
         ),
         new Patch(
             security: 'is_granted("ROLE_RECIPIENT_UPDATE")',
@@ -59,6 +62,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     'id' => 'exact',
     'fullname' => 'ipartial',
     'phone' => 'ipartial',
+    'phone2' => 'ipartial',
     'email' => 'ipartial',
     'deleted' => 'exact'
 ])]
@@ -78,16 +82,20 @@ class Recipient
     #[ORM\Column(length: 120)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
-    #[Groups(groups: ['recipient:get', 'recipient:post', 'recipient:patch', 'delivery:get'])]
+    #[Groups(groups: ['recipient:get', 'recipient:patch', 'delivery:get'])]
     private ?string $fullname = null;
 
     #[ORM\Column(length: 15, nullable: true)]
-    #[Groups(groups: ['recipient:get', 'recipient:post', 'recipient:patch'])]
+    #[Groups(groups: ['recipient:get', 'recipient:patch'])]
     private ?string $phone = null;
+
+    #[ORM\Column(length: 15, nullable: true)]
+    #[Groups(groups: ['recipient:get', 'recipient:patch'])]
+    private ?string $phone2 = null;
 
     #[ORM\Column(length: 180, nullable: true)]
     #[Assert\Email]
-    #[Groups(groups: ['recipient:get', 'recipient:post', 'recipient:patch'])]
+    #[Groups(groups: ['recipient:get', 'recipient:patch'])]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -108,9 +116,21 @@ class Recipient
     #[ORM\OneToMany(targetEntity: Delivery::class, mappedBy: 'recipient')]
     private Collection $deliveries;
 
+    #[ORM\ManyToOne(inversedBy: 'recipients')]
+    #[Groups(groups: ['recipient:get'])]
+    private ?Customer $customer = null;
+
+    /**
+     * @var Collection<int, Address>
+     */
+    #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'recipient', cascade: ['all'])]
+    #[Groups(groups: ['recipient:get'])]
+    private Collection $addresses;
+
     public function __construct()
     {
         $this->deliveries = new ArrayCollection();
+        $this->addresses = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -230,6 +250,68 @@ class Recipient
                 $delivery->setRecipient(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCustomer(): ?Customer
+    {
+        return $this->customer;
+    }
+
+    public function setCustomer(?Customer $customer): static
+    {
+        $this->customer = $customer;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Address>
+     */
+    public function getAddresses(): Collection
+    {
+        return $this->addresses;
+    }
+
+    public function addAddress(Address $address): static
+    {
+        if (!$this->addresses->contains($address)) {
+            $this->addresses->add($address);
+            $address->setRecipient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAddress(Address $address): static
+    {
+        if ($this->addresses->removeElement($address)) {
+            // set the owning side to null (unless already changed)
+            if ($address->getRecipient() === $this) {
+                $address->setRecipient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the value of phone2
+     */ 
+    public function getPhone2()
+    {
+        return $this->phone2;
+    }
+
+    /**
+     * Set the value of phone2
+     *
+     * @return  self
+     */ 
+    public function setPhone2($phone2)
+    {
+        $this->phone2 = $phone2;
 
         return $this;
     }

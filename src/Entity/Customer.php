@@ -125,10 +125,17 @@ class Customer
     #[Groups(groups: ['customer:get'])]
     private Collection $addresses;
 
+    /**
+     * @var Collection<int, Recipient>
+     */
+    #[ORM\OneToMany(targetEntity: Recipient::class, mappedBy: 'customer')]
+    private Collection $recipients;
+
     public function __construct()
     {
         $this->deliveries = new ArrayCollection();
         $this->addresses = new ArrayCollection();
+        $this->recipients = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -304,5 +311,35 @@ class Customer
     public function updateUpdatedAt(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    /**
+     * @return Collection<int, Recipient>
+     */
+    public function getRecipients(): Collection
+    {
+        return $this->recipients;
+    }
+
+    public function addRecipient(Recipient $recipient): static
+    {
+        if (!$this->recipients->contains($recipient)) {
+            $this->recipients->add($recipient);
+            $recipient->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRecipient(Recipient $recipient): static
+    {
+        if ($this->recipients->removeElement($recipient)) {
+            // set the owning side to null (unless already changed)
+            if ($recipient->getCustomer() === $this) {
+                $recipient->setCustomer(null);
+            }
+        }
+
+        return $this;
     }
 }
