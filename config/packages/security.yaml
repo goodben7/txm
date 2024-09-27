@@ -41,6 +41,10 @@ security:
             - ROLE_DELIVERY_INPROGRESS
             - ROLE_DELIVERY_DELAY
             - ROLE_DELIVERY_DELIVER
+            - ROLE_ADDRESS_DETAILS
+            - ROLE_ADDRESS_LIST
+            - ROLE_ADDRESS_CREATE
+            - ROLE_ADDRESS_UPDATE
 
     firewalls:
         dev:
