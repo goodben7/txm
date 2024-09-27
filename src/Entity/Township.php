@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Doctrine\IdGenerator;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\TownshipRepository;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: TownshipRepository::class)]
 class Township
@@ -16,9 +17,11 @@ class Township
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(IdGenerator::class)]
     #[ORM\Column(length: 16)]
+    #[Groups(groups: ['zone:get'])]
     private ?string $id = null;
 
     #[ORM\Column(length: 30)]
+    #[Groups(groups: ['zone:get'])]
     private ?string $label = null;
 
     #[ORM\ManyToOne(inversedBy: 'townships')]
