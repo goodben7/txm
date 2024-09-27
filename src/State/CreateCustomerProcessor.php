@@ -20,7 +20,13 @@ class CreateCustomerProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
 
-        $model = new NewCustomerModel($data->companyName, $data->fullname, $data->phone, $data->email);
+        $model = new NewCustomerModel(
+            $data->companyName, 
+            $data->fullname,
+            $data->addresses, 
+            $data->phone, 
+            $data->email
+        );
  
         return $this->manager->createFrom($model); 
     }

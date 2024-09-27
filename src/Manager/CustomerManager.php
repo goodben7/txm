@@ -26,6 +26,10 @@ class CustomerManager
         $customer->setEmail($model->email);
         $customer->setCreatedAt(new \DateTimeImmutable('now'));
 
+        foreach ($model->addresses as $addr) {
+            $customer->addAddress($addr);
+        }
+
         $this->em->persist($customer);
         $this->em->flush();
         

@@ -2,9 +2,10 @@
 
 namespace App\Entity;
 
-use App\Repository\AddressRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\AddressRepository;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AddressRepository::class)]
 class Address
@@ -12,19 +13,23 @@ class Address
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(groups: ['customer:get'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 60)]
+    #[Groups(groups: ['customer:get'])]
     private ?string $label = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(groups: ['customer:get'])]
     private ?string $address = null;
 
     #[ORM\Column]
+    #[Groups(groups: ['customer:get'])]
     private ?bool $isMain = null;
 
     #[ORM\ManyToOne(inversedBy: 'addresses')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Customer $customer = null;
 
     public function getId(): ?int
@@ -56,12 +61,12 @@ class Address
         return $this;
     }
 
-    public function isMain(): ?bool
+    public function isIsMain(): ?bool
     {
         return $this->isMain;
     }
 
-    public function setMain(bool $isMain): static
+    public function setIsMain(bool $isMain): static
     {
         $this->isMain = $isMain;
 

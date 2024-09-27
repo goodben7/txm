@@ -114,7 +114,8 @@ class Customer
     /**
      * @var Collection<int, Address>
      */
-    #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'customer')]
+    #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'customer', cascade: ['all'])]
+    #[Groups(groups: ['customer:get'])]
     private Collection $addresses;
 
     public function __construct()
