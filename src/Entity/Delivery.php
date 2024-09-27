@@ -247,6 +247,18 @@ class Delivery
     #[Groups(groups: ['delivery:get'])]
     private ?\DateTimeImmutable $terminedAt = null;
 
+    #[ORM\Column(length: 120, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
+    private ?string $zone = null;
+
+    #[ORM\ManyToOne(inversedBy: 'deliveries')]
+    #[Groups(groups: ['delivery:get'])]
+    private ?Address $pickupAddress = null;
+
+    #[ORM\ManyToOne(inversedBy: 'deliveries')]
+    #[Groups(groups: ['delivery:get'])]
+    private ?Address $deliveryAddress = null;
+
     public function getId(): ?string
     {
         return $this->id;
@@ -554,6 +566,42 @@ class Delivery
     public function setTerminedAt(?\DateTimeImmutable $terminedAt): static
     {
         $this->terminedAt = $terminedAt;
+
+        return $this;
+    }
+
+    public function getZone(): ?string
+    {
+        return $this->zone;
+    }
+
+    public function setZone(?string $zone): static
+    {
+        $this->zone = $zone;
+
+        return $this;
+    }
+
+    public function getPickupAddress(): ?Address
+    {
+        return $this->pickupAddress;
+    }
+
+    public function setPickupAddress(?Address $pickupAddress): static
+    {
+        $this->pickupAddress = $pickupAddress;
+
+        return $this;
+    }
+
+    public function getDeliveryAddress(): ?Address
+    {
+        return $this->deliveryAddress;
+    }
+
+    public function setDeliveryAddress(?Address $deliveryAddress): static
+    {
+        $this->deliveryAddress = $deliveryAddress;
 
         return $this;
     }

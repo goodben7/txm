@@ -25,10 +25,6 @@ class NewDeliveryModel
 
         #[Assert\NotNull]
         #[Assert\NotBlank]
-        public ?string $township = null,
-
-        #[Assert\NotNull]
-        #[Assert\NotBlank]
         public ?Recipient $recipient = null,
 
         #[Assert\NotNull]

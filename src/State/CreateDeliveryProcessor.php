@@ -24,7 +24,6 @@ class CreateDeliveryProcessor implements ProcessorInterface
             $data->type, 
             $data->description, 
             $data->deliveryDate, 
-            $data->township, 
             $data->recipient, 
             $data->customer
         );
