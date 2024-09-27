@@ -64,7 +64,8 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'phone' => 'ipartial',
     'phone2' => 'ipartial',
     'email' => 'ipartial',
-    'deleted' => 'exact'
+    'deleted' => 'exact',
+    'customer' => 'exact'
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
