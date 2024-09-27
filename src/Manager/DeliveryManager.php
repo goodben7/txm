@@ -30,10 +30,6 @@ class DeliveryManager
         
         $d = new Delivery();
 
-        $d->setPickupAddress($model->pickupAddress);
-        $d->setSenderPhone($model->senderPhone);
-        $d->setDeliveryAddress($model->deliveryAddress);
-        $d->setRecipientPhone($model->recipientPhone);
         $d->setType($model->type);
         $d->setDescription($model->description);
         $d->setDeliveryDate($model->deliveryDate);

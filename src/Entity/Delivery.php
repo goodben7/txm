@@ -103,10 +103,6 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'id' => 'exact',
-    'pickupAddress' => 'ipartial',
-    'senderPhone' => 'ipartial',
-    'deliveryAddress' => 'ipartial',
-    'recipientPhone' => 'ipartial',
     'status' => 'exact',
     'description' => 'ipartial',
     'type' => 'exact',
@@ -148,22 +144,6 @@ class Delivery
     #[ORM\Column(length: 16)]
     #[Groups(groups: ['delivery:get'])]
     private ?string $id = null;
-
-    #[ORM\Column(type: Types::TEXT)]
-    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
-    private ?string $pickupAddress = null;
-
-    #[ORM\Column(length: 15)]
-    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
-    private ?string $senderPhone = null;
-
-    #[ORM\Column(type: Types::TEXT)]
-    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
-    private ?string $deliveryAddress = null;
-
-    #[ORM\Column(length: 15)]
-    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
-    private ?string $recipientPhone = null;
 
     #[ORM\Column]
     #[Groups(groups: ['delivery:get'])]
@@ -270,54 +250,6 @@ class Delivery
     public function getId(): ?string
     {
         return $this->id;
-    }
-
-    public function getPickupAddress(): ?string
-    {
-        return $this->pickupAddress;
-    }
-
-    public function setPickupAddress(string $pickupAddress): static
-    {
-        $this->pickupAddress = $pickupAddress;
-
-        return $this;
-    }
-
-    public function getSenderPhone(): ?string
-    {
-        return $this->senderPhone;
-    }
-
-    public function setSenderPhone(string $senderPhone): static
-    {
-        $this->senderPhone = $senderPhone;
-
-        return $this;
-    }
-
-    public function getDeliveryAddress(): ?string
-    {
-        return $this->deliveryAddress;
-    }
-
-    public function setDeliveryAddress(string $deliveryAddress): static
-    {
-        $this->deliveryAddress = $deliveryAddress;
-
-        return $this;
-    }
-
-    public function getRecipientPhone(): ?string
-    {
-        return $this->recipientPhone;
-    }
-
-    public function setRecipientPhone(string $recipientPhone): static
-    {
-        $this->recipientPhone = $recipientPhone;
-
-        return $this;
     }
 
     public function getDeliveryDate(): ?\DateTimeImmutable
