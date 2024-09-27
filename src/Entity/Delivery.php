@@ -111,7 +111,6 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'description' => 'ipartial',
     'type' => 'exact',
     'township' => 'exact',
-    'zone' => 'exact',
     'recipient' => 'exact',
     'customer' => 'exact',
     'createdBy' => 'exact',
@@ -189,11 +188,6 @@ class Delivery
     #[ORM\Column(length: 120)]
     #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $township = null;
-
-    #[ORM\ManyToOne(inversedBy: 'deliveries')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
-    private ?Zone $zone = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
     #[ORM\JoinColumn(nullable: false)]
@@ -394,18 +388,6 @@ class Delivery
     public function setTownship(string $township): static
     {
         $this->township = $township;
-
-        return $this;
-    }
-
-    public function getZone(): ?Zone
-    {
-        return $this->zone;
-    }
-
-    public function setZone(?Zone $zone): static
-    {
-        $this->zone = $zone;
 
         return $this;
     }

@@ -46,10 +46,6 @@ class NewDeliveryModel
 
         #[Assert\NotNull]
         #[Assert\NotBlank]
-        public ?Zone $zone = null,
-
-        #[Assert\NotNull]
-        #[Assert\NotBlank]
         public ?Recipient $recipient = null,
 
         #[Assert\NotNull]

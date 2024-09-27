@@ -38,7 +38,6 @@ class DeliveryManager
         $d->setDescription($model->description);
         $d->setDeliveryDate($model->deliveryDate);
         $d->setTownship($model->township);
-        $d->setZone($model->zone);
         $d->setRecipient($model->recipient);
         $d->setCustomer($model->customer);
         $d->setCreatedAt(new \DateTimeImmutable('now'));
