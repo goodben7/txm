@@ -2,6 +2,7 @@
 
 namespace App\Model;
 
+use App\Entity\Address;
 use App\Entity\Customer;
 use App\Entity\Delivery;
 use App\Entity\Recipient;
@@ -30,6 +31,16 @@ class NewDeliveryModel
         #[Assert\NotNull]
         #[Assert\NotBlank]
         public ?Customer $customer = null,
+
+        #[Assert\NotNull]
+        #[Assert\NotBlank]
+        public ?Address $pickupAddress = null,
+
+        #[Assert\NotNull]
+        #[Assert\NotBlank]
+        public ?Address $deliveryAddress = null,
+
+        public ?string $additionalInformation = null,
 
     )
     {  

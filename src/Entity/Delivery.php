@@ -107,6 +107,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'description' => 'ipartial',
     'type' => 'exact',
     'township' => 'exact',
+    'zone' => 'exact',
     'recipient' => 'exact',
     'customer' => 'exact',
     'createdBy' => 'exact',
@@ -258,6 +259,10 @@ class Delivery
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
     #[Groups(groups: ['delivery:get'])]
     private ?Address $deliveryAddress = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
+    private ?string $additionalInformation = null;
 
     public function getId(): ?string
     {
@@ -602,6 +607,18 @@ class Delivery
     public function setDeliveryAddress(?Address $deliveryAddress): static
     {
         $this->deliveryAddress = $deliveryAddress;
+
+        return $this;
+    }
+
+    public function getAdditionalInformation(): ?string
+    {
+        return $this->additionalInformation;
+    }
+
+    public function setAdditionalInformation(?string $additionalInformation): static
+    {
+        $this->additionalInformation = $additionalInformation;
 
         return $this;
     }

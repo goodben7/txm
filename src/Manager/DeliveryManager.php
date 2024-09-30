@@ -37,12 +37,16 @@ class DeliveryManager
         $d->setCustomer($model->customer);
         $d->setCreatedAt(new \DateTimeImmutable('now'));
         $d->setCreatedBy($user->getId());
+        $d->setPickupAddress($model->pickupAddress);
+        $d->setDeliveryAddress($model->deliveryAddress);
+        $d->setAdditionalInformation($model->additionalInformation);
         $d->setTrackingNumber($this->generateTrackingNumber($model->type, $model->deliveryDate));
-
-
+        $d->setTownship($model->deliveryAddress->getTownship()->getId());
+        $d->setZone($model->deliveryAddress->getTownship()->getZone()->getId());
+        
         $this->em->persist($d);
         $this->em->flush();
-
+        
         return $d;
     }
 
