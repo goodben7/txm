@@ -61,19 +61,19 @@ class Zone
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(IdGenerator::class)]
     #[ORM\Column(length: 16)]
-    #[Groups(groups: ['zone:get'])]
+    #[Groups(groups: ['zone:get', 'township:get'])]
     private ?string $id = null;
 
     #[ORM\Column(length: 30)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
-    #[Groups(groups: ['zone:get', 'zone:patch'])]
+    #[Groups(groups: ['zone:get', 'zone:patch', 'township:get'])]
     private ?string $label = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
-    #[Groups(groups: ['zone:get', 'zone:patch'])]
+    #[Groups(groups: ['zone:get', 'zone:patch', 'township:get'])]
     private ?string $description = '-';
 
     #[ORM\Column]
