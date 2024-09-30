@@ -21,17 +21,15 @@ class CreateDeliveryProcessor implements ProcessorInterface
     {
 
         $model = new NewDeliveryModel(
-            $data->pickupAddress, 
-            $data->senderPhone, 
-            $data->deliveryAddress, 
-            $data->recipientPhone, 
             $data->type, 
             $data->description, 
             $data->deliveryDate, 
-            $data->township, 
-            $data->zone, 
             $data->recipient, 
-            $data->customer
+            $data->customer,
+            $data->pickupAddress,
+            $data->deliveryAddress,
+            $data->additionalInformation
+
         );
  
         return $this->manager->createFrom($model); 

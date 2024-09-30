@@ -103,10 +103,6 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 )]
 #[ApiFilter(SearchFilter::class, properties: [
     'id' => 'exact',
-    'pickupAddress' => 'ipartial',
-    'senderPhone' => 'ipartial',
-    'deliveryAddress' => 'ipartial',
-    'recipientPhone' => 'ipartial',
     'status' => 'exact',
     'description' => 'ipartial',
     'type' => 'exact',
@@ -150,22 +146,6 @@ class Delivery
     #[Groups(groups: ['delivery:get'])]
     private ?string $id = null;
 
-    #[ORM\Column(type: Types::TEXT)]
-    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
-    private ?string $pickupAddress = null;
-
-    #[ORM\Column(length: 15)]
-    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
-    private ?string $senderPhone = null;
-
-    #[ORM\Column(type: Types::TEXT)]
-    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
-    private ?string $deliveryAddress = null;
-
-    #[ORM\Column(length: 15)]
-    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
-    private ?string $recipientPhone = null;
-
     #[ORM\Column]
     #[Groups(groups: ['delivery:get'])]
     private ?\DateTimeImmutable $deliveryDate = null;
@@ -189,11 +169,6 @@ class Delivery
     #[ORM\Column(length: 120)]
     #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $township = null;
-
-    #[ORM\ManyToOne(inversedBy: 'deliveries')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
-    private ?Zone $zone = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
     #[ORM\JoinColumn(nullable: false)]
@@ -273,57 +248,25 @@ class Delivery
     #[Groups(groups: ['delivery:get'])]
     private ?\DateTimeImmutable $terminedAt = null;
 
+    #[ORM\Column(length: 120, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
+    private ?string $zone = null;
+
+    #[ORM\ManyToOne(inversedBy: 'deliveries')]
+    #[Groups(groups: ['delivery:get'])]
+    private ?Address $pickupAddress = null;
+
+    #[ORM\ManyToOne(inversedBy: 'deliveries')]
+    #[Groups(groups: ['delivery:get'])]
+    private ?Address $deliveryAddress = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
+    private ?string $additionalInformation = null;
+
     public function getId(): ?string
     {
         return $this->id;
-    }
-
-    public function getPickupAddress(): ?string
-    {
-        return $this->pickupAddress;
-    }
-
-    public function setPickupAddress(string $pickupAddress): static
-    {
-        $this->pickupAddress = $pickupAddress;
-
-        return $this;
-    }
-
-    public function getSenderPhone(): ?string
-    {
-        return $this->senderPhone;
-    }
-
-    public function setSenderPhone(string $senderPhone): static
-    {
-        $this->senderPhone = $senderPhone;
-
-        return $this;
-    }
-
-    public function getDeliveryAddress(): ?string
-    {
-        return $this->deliveryAddress;
-    }
-
-    public function setDeliveryAddress(string $deliveryAddress): static
-    {
-        $this->deliveryAddress = $deliveryAddress;
-
-        return $this;
-    }
-
-    public function getRecipientPhone(): ?string
-    {
-        return $this->recipientPhone;
-    }
-
-    public function setRecipientPhone(string $recipientPhone): static
-    {
-        $this->recipientPhone = $recipientPhone;
-
-        return $this;
     }
 
     public function getDeliveryDate(): ?\DateTimeImmutable
@@ -394,18 +337,6 @@ class Delivery
     public function setTownship(string $township): static
     {
         $this->township = $township;
-
-        return $this;
-    }
-
-    public function getZone(): ?Zone
-    {
-        return $this->zone;
-    }
-
-    public function setZone(?Zone $zone): static
-    {
-        $this->zone = $zone;
 
         return $this;
     }
@@ -640,6 +571,54 @@ class Delivery
     public function setTerminedAt(?\DateTimeImmutable $terminedAt): static
     {
         $this->terminedAt = $terminedAt;
+
+        return $this;
+    }
+
+    public function getZone(): ?string
+    {
+        return $this->zone;
+    }
+
+    public function setZone(?string $zone): static
+    {
+        $this->zone = $zone;
+
+        return $this;
+    }
+
+    public function getPickupAddress(): ?Address
+    {
+        return $this->pickupAddress;
+    }
+
+    public function setPickupAddress(?Address $pickupAddress): static
+    {
+        $this->pickupAddress = $pickupAddress;
+
+        return $this;
+    }
+
+    public function getDeliveryAddress(): ?Address
+    {
+        return $this->deliveryAddress;
+    }
+
+    public function setDeliveryAddress(?Address $deliveryAddress): static
+    {
+        $this->deliveryAddress = $deliveryAddress;
+
+        return $this;
+    }
+
+    public function getAdditionalInformation(): ?string
+    {
+        return $this->additionalInformation;
+    }
+
+    public function setAdditionalInformation(?string $additionalInformation): static
+    {
+        $this->additionalInformation = $additionalInformation;
 
         return $this;
     }

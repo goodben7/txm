@@ -28,6 +28,8 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE', fields: ['phone'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE2', fields: ['phone2'])]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => 'customer:get'], 
     operations:[
@@ -60,6 +62,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'companyName' => 'ipartial',
     'fullname' => 'ipartial',
     'phone' => 'ipartial',
+    'phone2' => 'ipartial',
     'email' => 'ipartial',
     'deleted' => 'exact'
 ])]
@@ -89,6 +92,10 @@ class Customer
     #[Groups(groups: ['customer:get', 'customer:patch'])]
     private ?string $phone = null;
 
+    #[ORM\Column(length: 15, nullable: true)]
+    #[Groups(groups: ['customer:get', 'customer:patch'])]
+    private ?string $phone2 = null;
+
     #[ORM\Column(length: 180, nullable: true)]
     #[Groups(groups: ['customer:get', 'customer:patch'])]
     private ?string $email = null;
@@ -111,9 +118,25 @@ class Customer
     #[ORM\OneToMany(targetEntity: Delivery::class, mappedBy: 'customer')]
     private Collection $deliveries;
 
+    /**
+     * @var Collection<int, Address>
+     */
+    #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'customer', cascade: ['all'])]
+    #[Groups(groups: ['customer:get'])]
+    private Collection $addresses;
+
+    /**
+     * @var Collection<int, Recipient>
+     */
+    #[ORM\OneToMany(targetEntity: Recipient::class, mappedBy: 'customer')]
+    #[Groups(groups: ['customer:get'])]
+    private Collection $recipients;
+
     public function __construct()
     {
         $this->deliveries = new ArrayCollection();
+        $this->addresses = new ArrayCollection();
+        $this->recipients = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -229,6 +252,92 @@ class Customer
             // set the owning side to null (unless already changed)
             if ($delivery->getCustomer() === $this) {
                 $delivery->setCustomer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Address>
+     */
+    public function getAddresses(): Collection
+    {
+        return $this->addresses;
+    }
+
+    public function addAddress(Address $address): static
+    {
+        if (!$this->addresses->contains($address)) {
+            $this->addresses->add($address);
+            $address->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAddress(Address $address): static
+    {
+        if ($this->addresses->removeElement($address)) {
+            // set the owning side to null (unless already changed)
+            if ($address->getCustomer() === $this) {
+                $address->setCustomer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the value of phone2
+     */ 
+    public function getPhone2()
+    {
+        return $this->phone2;
+    }
+
+    /**
+     * Set the value of phone2
+     *
+     * @return  self
+     */ 
+    public function setPhone2($phone2)
+    {
+        $this->phone2 = $phone2;
+
+        return $this;
+    }
+
+    #[ORM\PreUpdate]
+    public function updateUpdatedAt(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    /**
+     * @return Collection<int, Recipient>
+     */
+    public function getRecipients(): Collection
+    {
+        return $this->recipients;
+    }
+
+    public function addRecipient(Recipient $recipient): static
+    {
+        if (!$this->recipients->contains($recipient)) {
+            $this->recipients->add($recipient);
+            $recipient->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRecipient(Recipient $recipient): static
+    {
+        if ($this->recipients->removeElement($recipient)) {
+            // set the owning side to null (unless already changed)
+            if ($recipient->getCustomer() === $this) {
+                $recipient->setCustomer(null);
             }
         }
 

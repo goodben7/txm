@@ -30,25 +30,23 @@ class DeliveryManager
         
         $d = new Delivery();
 
-        $d->setPickupAddress($model->pickupAddress);
-        $d->setSenderPhone($model->senderPhone);
-        $d->setDeliveryAddress($model->deliveryAddress);
-        $d->setRecipientPhone($model->recipientPhone);
         $d->setType($model->type);
         $d->setDescription($model->description);
         $d->setDeliveryDate($model->deliveryDate);
-        $d->setTownship($model->township);
-        $d->setZone($model->zone);
         $d->setRecipient($model->recipient);
         $d->setCustomer($model->customer);
         $d->setCreatedAt(new \DateTimeImmutable('now'));
         $d->setCreatedBy($user->getId());
+        $d->setPickupAddress($model->pickupAddress);
+        $d->setDeliveryAddress($model->deliveryAddress);
+        $d->setAdditionalInformation($model->additionalInformation);
         $d->setTrackingNumber($this->generateTrackingNumber($model->type, $model->deliveryDate));
-
-
+        $d->setTownship($model->deliveryAddress->getTownship()->getId());
+        $d->setZone($model->deliveryAddress->getTownship()->getZone()->getId());
+        
         $this->em->persist($d);
         $this->em->flush();
-
+        
         return $d;
     }
 

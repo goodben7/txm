@@ -2,14 +2,16 @@
 
 namespace App\Model;
 
+use App\Entity\Customer;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class NewCustomerModel
+class NewRecipientModel
 {
     public function __construct(
+        
         #[Assert\NotNull]
         #[Assert\NotBlank]
-        public ?string $companyName = null,
+        public ?Customer $customer = null, 
 
         #[Assert\NotNull]
         #[Assert\NotBlank]

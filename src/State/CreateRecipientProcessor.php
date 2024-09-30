@@ -2,26 +2,26 @@
 
 namespace App\State;
 
+use App\Model\NewRecipientModel;
+use App\Manager\RecipientManager;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Manager\CustomerManager;
-use App\Model\NewCustomerModel;
 
-class CreateCustomerProcessor implements ProcessorInterface
+class CreateRecipientProcessor implements ProcessorInterface
 {
-    public function __construct(private CustomerManager $manager)
+    public function __construct(private RecipientManager $manager)
     {
         
     }
 
     /**
-     * @param \App\Dto\CreateCustomerDto $data 
+     * @param \App\Dto\CreateRecipientDto $data 
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
 
-        $model = new NewCustomerModel(
-            $data->companyName, 
+        $model = new NewRecipientModel(
+            $data->customer, 
             $data->fullname,
             $data->addresses, 
             $data->phone, 

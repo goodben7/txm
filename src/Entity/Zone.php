@@ -2,24 +2,26 @@
 
 namespace App\Entity;
 
+use App\Dto\CreateZoneDto;
 use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ZoneRepository;
+use App\State\CreateZoneProcessor;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
+use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use Doctrine\Common\Collections\ArrayCollection;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
-use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 
 #[ORM\Entity(repositoryClass: ZoneRepository::class)]
 #[ApiResource(
@@ -35,8 +37,8 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Post(
             security: 'is_granted("ROLE_ZONE_CREATE")',
-            denormalizationContext: ['groups' => 'zone:post'],
-            processor: PersistProcessor::class,
+            input: CreateZoneDto::class,
+            processor: CreateZoneProcessor::class,
         ),
         new Patch(
             security: 'is_granted("ROLE_ZONE_UPDATE")',
@@ -65,28 +67,29 @@ class Zone
     #[ORM\Column(length: 30)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
-    #[Groups(groups: ['zone:get', 'zone:post', 'zone:patch', 'delivery:get'])]
+    #[Groups(groups: ['zone:get', 'zone:patch'])]
     private ?string $label = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotNull]
     #[Assert\NotBlank]
-    #[Groups(groups: ['zone:get', 'zone:post', 'zone:patch'])]
-    private ?string $description = null;
+    #[Groups(groups: ['zone:get', 'zone:patch'])]
+    private ?string $description = '-';
 
     #[ORM\Column]
-    #[Groups(groups: ['zone:get', 'zone:post', 'zone:patch'])]
+    #[Groups(groups: ['zone:get', 'zone:patch'])]
     private ?bool $actived = true;
 
     /**
-     * @var Collection<int, Delivery>
+     * @var Collection<int, Township>
      */
-    #[ORM\OneToMany(targetEntity: Delivery::class, mappedBy: 'zone')]
-    private Collection $deliveries;
+    #[ORM\OneToMany(targetEntity: Township::class, mappedBy: 'zone', cascade: ['all'])]
+    #[Groups(groups: ['zone:get'])]
+    private Collection $townships;
 
     public function __construct()
     {
-        $this->deliveries = new ArrayCollection();
+        $this->townships = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -131,29 +134,29 @@ class Zone
     }
 
     /**
-     * @return Collection<int, Delivery>
+     * @return Collection<int, Township>
      */
-    public function getDeliveries(): Collection
+    public function getTownships(): Collection
     {
-        return $this->deliveries;
+        return $this->townships;
     }
 
-    public function addDelivery(Delivery $delivery): static
+    public function addTownship(Township $township): static
     {
-        if (!$this->deliveries->contains($delivery)) {
-            $this->deliveries->add($delivery);
-            $delivery->setZone($this);
+        if (!$this->townships->contains($township)) {
+            $this->townships->add($township);
+            $township->setZone($this);
         }
 
         return $this;
     }
 
-    public function removeDelivery(Delivery $delivery): static
+    public function removeTownship(Township $township): static
     {
-        if ($this->deliveries->removeElement($delivery)) {
+        if ($this->townships->removeElement($township)) {
             // set the owning side to null (unless already changed)
-            if ($delivery->getZone() === $this) {
-                $delivery->setZone(null);
+            if ($township->getZone() === $this) {
+                $township->setZone(null);
             }
         }
 
