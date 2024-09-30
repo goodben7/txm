@@ -85,6 +85,10 @@ class Address
     #[ORM\OneToMany(targetEntity: Delivery::class, mappedBy: 'pickupAddress')]
     private Collection $deliveries;
 
+    #[ORM\ManyToOne(inversedBy: 'addresses')]
+    #[Groups(groups: ['address:get', 'address:post', 'address:patch'])]
+    private ?Township $township = null;
+
     public function __construct()
     {
         $this->deliveries = new ArrayCollection();
@@ -181,6 +185,18 @@ class Address
                 $delivery->setPickupAddress(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getTownship(): ?Township
+    {
+        return $this->township;
+    }
+
+    public function setTownship(?Township $township): static
+    {
+        $this->township = $township;
 
         return $this;
     }
