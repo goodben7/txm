@@ -15,7 +15,6 @@ class NewCustomerModel
         #[Assert\NotBlank]
         public ?string $fullname = null, 
 
-        #[Assert\Count(min: 1)]
         #[Assert\Valid()]
         /** @var array<\App\Entity\Address> */
         public array $addresses = [],
