@@ -47,6 +47,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'id' => 'exact',
     'label' => 'ipartial',
     'address' => 'ipartial',
+    'isMain' => 'exact',
     'customer' => 'exact',
     'recipient' => 'exact'
 ])]
