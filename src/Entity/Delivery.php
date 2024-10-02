@@ -253,11 +253,11 @@ class Delivery
     private ?string $zone = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?Address $pickupAddress = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?Address $deliveryAddress = null;
 
     #[ORM\Column(length: 255, nullable: true)]
