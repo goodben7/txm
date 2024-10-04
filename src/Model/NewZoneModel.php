@@ -4,7 +4,7 @@ namespace App\Model;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class NewZOneModel
+class NewZoneModel
 {
     public function __construct(
         #[Assert\NotNull]

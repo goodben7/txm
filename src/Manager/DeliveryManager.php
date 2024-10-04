@@ -6,6 +6,8 @@ use App\Entity\User;
 use App\Entity\Delivery;
 use App\Model\NewDeliveryModel;
 use App\Repository\UserRepository;
+use App\Message\Query\GetUserDetails;
+use App\Message\Query\QueryBusInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -16,17 +18,18 @@ class DeliveryManager
     public function __construct(
         private EntityManagerInterface $em,
         private Security $security,
-        private UserRepository $userRepository
+        private UserRepository $userRepository,
+        private QueryBusInterface $queries,
     )
     {
     }
 
     public function createFrom(NewDeliveryModel $model): Delivery {
 
-        $email = $this->security->getUser()->getUserIdentifier();
+        $userId = $this->security->getUser()->getUserIdentifier();
 
-        /** @var User|null $user */
-        $user = $this->userRepository->findOneBy(['email' => $email]);
+        /** @var User $user */
+        $user = $this->queries->ask(new GetUserDetails($userId));
         
         $d = new Delivery();
 
