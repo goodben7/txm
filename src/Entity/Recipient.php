@@ -27,9 +27,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 
 #[ORM\Entity(repositoryClass: RecipientRepository::class)]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE', fields: ['phone'])]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE2', fields: ['phone2'])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => 'recipient:get'],
