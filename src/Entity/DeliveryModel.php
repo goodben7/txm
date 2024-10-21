@@ -3,11 +3,25 @@
 namespace App\Entity;
 
 use App\Doctrine\IdGenerator;
+use ApiPlatform\Metadata\Post;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Dto\CreateDeliveryModelDto;
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\DeliveryModelRepository;
+use App\State\CreateDeliveryModelProcessor;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: DeliveryModelRepository::class)]
+#[ApiResource(
+    normalizationContext: ['groups' => 'delivery_model:get'], 
+    operations:[
+        new Post(
+            input: CreateDeliveryModelDto::class,
+            processor: CreateDeliveryModelProcessor::class,
+        )
+    ]
+)]
 class DeliveryModel
 {
     const ID_PREFIX = "DM";
@@ -22,48 +36,61 @@ class DeliveryModel
     private ?string $id = null;
 
     #[ORM\Column(length: 120)]
+    #[Groups(groups: ['delivery_model:get'])]
     private ?string $fullname = null;
 
     #[ORM\Column(length: 30)]
+    #[Groups(groups: ['delivery_model:get'])]
     private ?string $phone = null;
 
     #[ORM\Column(length: 1)]
+    #[Groups(groups: ['delivery_model:get'])]
     private ?string $type = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(groups: ['delivery_model:get'])]
     private ?string $address = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(groups: ['delivery_model:get'])]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 17, scale: 2)]
+    #[Groups(groups: ['delivery_model:get'])]
     private ?string $amount = null;
 
     #[ORM\Column]
+    #[Groups(groups: ['delivery_model:get'])]
     private ?\DateTimeImmutable $deliveryDate = null;
 
     #[ORM\Column(length: 16)]
     private ?string $createdBy = null;
 
     #[ORM\Column]
+    #[Groups(groups: ['delivery_model:get'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 255)]
     private ?string $apikey = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $NumberMP = null;
+    #[Groups(groups: ['delivery_model:get'])]
+    private ?string $numberMP = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(groups: ['delivery_model:get'])]
     private ?string $data1 = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(groups: ['delivery_model:get'])]
     private ?string $data2 = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(groups: ['delivery_model:get'])]
     private ?string $data3 = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(groups: ['delivery_model:get'])]
     private ?string $data4 = null;
 
     public function getId(): ?string
@@ -193,12 +220,12 @@ class DeliveryModel
 
     public function getNumberMP(): ?string
     {
-        return $this->NumberMP;
+        return $this->numberMP;
     }
 
-    public function setNumberMP(string $NumberMP): static
+    public function setNumberMP(string $numberMP): static
     {
-        $this->NumberMP = $NumberMP;
+        $this->numberMP = $numberMP;
 
         return $this;
     }
