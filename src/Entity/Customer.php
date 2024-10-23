@@ -130,11 +130,18 @@ class Customer
     #[Groups(groups: ['customer:get'])]
     private Collection $recipients;
 
+    /**
+     * @var Collection<int, DeliveryModel>
+     */
+    #[ORM\OneToMany(targetEntity: DeliveryModel::class, mappedBy: 'customer')]
+    private Collection $deliveryModels;
+
     public function __construct()
     {
         $this->deliveries = new ArrayCollection();
         $this->addresses = new ArrayCollection();
         $this->recipients = new ArrayCollection();
+        $this->deliveryModels = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -336,6 +343,36 @@ class Customer
             // set the owning side to null (unless already changed)
             if ($recipient->getCustomer() === $this) {
                 $recipient->setCustomer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, DeliveryModel>
+     */
+    public function getDeliveryModels(): Collection
+    {
+        return $this->deliveryModels;
+    }
+
+    public function addDeliveryModel(DeliveryModel $deliveryModel): static
+    {
+        if (!$this->deliveryModels->contains($deliveryModel)) {
+            $this->deliveryModels->add($deliveryModel);
+            $deliveryModel->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDeliveryModel(DeliveryModel $deliveryModel): static
+    {
+        if ($this->deliveryModels->removeElement($deliveryModel)) {
+            // set the owning side to null (unless already changed)
+            if ($deliveryModel->getCustomer() === $this) {
+                $deliveryModel->setCustomer(null);
             }
         }
 

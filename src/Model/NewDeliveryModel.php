@@ -31,13 +31,9 @@ class NewDeliveryModel
         #[Assert\NotNull]
         #[Assert\NotBlank]
         public ?Customer $customer = null,
-
-        #[Assert\NotNull]
-        #[Assert\NotBlank]
+        
         public ?Address $pickupAddress = null,
 
-        #[Assert\NotNull]
-        #[Assert\NotBlank]
         public ?Address $deliveryAddress = null,
 
         public ?string $additionalInformation = null,

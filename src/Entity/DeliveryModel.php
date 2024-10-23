@@ -8,6 +8,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Dto\CreateDeliveryModelDto;
 use ApiPlatform\Metadata\ApiResource;
+use App\Model\DeliveryModelInterface;
 use App\Repository\DeliveryModelRepository;
 use App\State\CreateDeliveryModelProcessor;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -22,7 +23,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         )
     ]
 )]
-class DeliveryModel
+class DeliveryModel implements DeliveryModelInterface 
 {
     const ID_PREFIX = "DM";
 
@@ -92,6 +93,9 @@ class DeliveryModel
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(groups: ['delivery_model:get'])]
     private ?string $data4 = null;
+
+    #[ORM\ManyToOne(inversedBy: 'deliveryModels')]
+    private ?Customer $customer = null;
 
     public function getId(): ?string
     {
@@ -274,6 +278,18 @@ class DeliveryModel
     public function setData4(?string $data4): static
     {
         $this->data4 = $data4;
+
+        return $this;
+    }
+
+    public function getCustomer(): ?Customer
+    {
+        return $this->customer;
+    }
+
+    public function setCustomer(?Customer $customer): static
+    {
+        $this->customer = $customer;
 
         return $this;
     }

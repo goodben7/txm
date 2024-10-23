@@ -166,7 +166,7 @@ class Delivery
     #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $type = null;
 
-    #[ORM\Column(length: 120)]
+    #[ORM\Column(length: 120, nullable: true)]
     #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $township = null;
 
@@ -253,10 +253,12 @@ class Delivery
     private ?string $zone = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?Address $pickupAddress = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?Address $deliveryAddress = null;
 
@@ -334,7 +336,7 @@ class Delivery
         return $this->township;
     }
 
-    public function setTownship(string $township): static
+    public function setTownship(?string $township): static
     {
         $this->township = $township;
 

@@ -26,7 +26,7 @@ class DeliveryManager
 
     public function createFrom(NewDeliveryModel $model): Delivery {
 
-        $userId = $this->security->getUser()->getUserIdentifier();
+        $userId = $this->security->getUser() ? $this->security->getUser()->getUserIdentifier() : null;
 
         /** @var User $user */
         $user = $this->queries->ask(new GetUserDetails($userId));
@@ -39,13 +39,13 @@ class DeliveryManager
         $d->setRecipient($model->recipient);
         $d->setCustomer($model->customer);
         $d->setCreatedAt(new \DateTimeImmutable('now'));
-        $d->setCreatedBy($user->getId());
+        $d->setCreatedBy($user ? $user->getId() : 'SYSTEM');
         $d->setPickupAddress($model->pickupAddress);
         $d->setDeliveryAddress($model->deliveryAddress);
         $d->setAdditionalInformation($model->additionalInformation);
         $d->setTrackingNumber($this->generateTrackingNumber($model->type, $model->deliveryDate));
-        $d->setTownship($model->deliveryAddress->getTownship()->getId());
-        $d->setZone($model->deliveryAddress->getTownship()->getZone()->getId());
+        $d->setTownship($model->deliveryAddress ? $model->deliveryAddress->getTownship()?->getId() : null);
+        $d->setZone($model->deliveryAddress ? $model->deliveryAddress->getTownship()?->getZone()?->getId() : null);
         
         $this->em->persist($d);
         $this->em->flush();

@@ -2,14 +2,16 @@
 
 namespace App\State;
 
-use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
-use App\Manager\DeliveryModelManager;
 use App\Model\CreateDeliveryModel;
+use ApiPlatform\Metadata\Operation;
+use App\Manager\DeliveryModelManager;
+use ApiPlatform\State\ProcessorInterface;
+use App\Message\Command\CommandBusInterface;
+use App\Message\Command\CreateDeliveryCommand;
 
 class CreateDeliveryModelProcessor implements ProcessorInterface
 {
-    public function __construct(private DeliveryModelManager $manager)
+    public function __construct(private DeliveryModelManager $manager, private CommandBusInterface $bus,)
     {
         
     }
@@ -34,7 +36,12 @@ class CreateDeliveryModelProcessor implements ProcessorInterface
             $data->data3,
             $data->data4,
         );
+        
  
-        return $this->manager->createFrom($model); 
+        $m = $this->manager->createFrom($model); 
+
+        $this->bus->dispatch(new CreateDeliveryCommand($m));
+        
+        return $m;
     }
 }
