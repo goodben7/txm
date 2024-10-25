@@ -5,6 +5,7 @@ namespace App\Manager;
 use App\Entity\Customer;
 use App\Entity\DeliveryModel;
 use App\Model\CreateDeliveryModel;
+use App\Service\EncryptionService;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
@@ -15,7 +16,8 @@ class DeliveryModelManager
     public function __construct(
         private EntityManagerInterface $em,
         private RequestStack $requestStack,
-        private CustomerRepository $customerRepository
+        private CustomerRepository $customerRepository,
+        private EncryptionService $encryptionService
     )
     {
     }
@@ -26,11 +28,13 @@ class DeliveryModelManager
         $d = new DeliveryModel();
 
         $request = $this->requestStack->getCurrentRequest();
-        $customerId = $request->headers->get('apikey');
+        $apikey = $request->headers->get('apikey');
 
-        if (null === $customerId) {
+        if (null === $apikey) {
             throw new UnavailableDataException('api key does not exist');
         }
+
+        $customerId = $this->encryptionService->decrypt($apikey);
 
         /** @var Customer|null $customer */
         $customer = $this->customerRepository->findOneBy(['id' => $customerId]);
