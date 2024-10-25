@@ -12,6 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
 use Symfony\Bundle\SecurityBundle\Security;
 use App\Exception\InvalidActionInputException;
+use App\Model\UpdateDeliveryModel;
 
 class DeliveryManager
 {
@@ -26,7 +27,7 @@ class DeliveryManager
 
     public function createFrom(NewDeliveryModel $model): Delivery {
 
-        $userId = $this->security->getUser()->getUserIdentifier();
+        $userId = $this->security->getUser() ? $this->security->getUser()->getUserIdentifier() : null;
 
         /** @var User $user */
         $user = $this->queries->ask(new GetUserDetails($userId));
@@ -39,19 +40,55 @@ class DeliveryManager
         $d->setRecipient($model->recipient);
         $d->setCustomer($model->customer);
         $d->setCreatedAt(new \DateTimeImmutable('now'));
-        $d->setCreatedBy($user->getId());
+        $d->setCreatedBy($user ? $user->getId() : 'SYSTEM');
         $d->setPickupAddress($model->pickupAddress);
         $d->setDeliveryAddress($model->deliveryAddress);
         $d->setAdditionalInformation($model->additionalInformation);
         $d->setTrackingNumber($this->generateTrackingNumber($model->type, $model->deliveryDate));
-        $d->setTownship($model->deliveryAddress->getTownship()->getId());
-        $d->setZone($model->deliveryAddress->getTownship()->getZone()->getId());
+        $d->setTownship($model->deliveryAddress ? $model->deliveryAddress->getTownship()?->getId() : null);
+        $d->setZone($model->deliveryAddress ? $model->deliveryAddress->getTownship()?->getZone()?->getId() : null);
         
         $this->em->persist($d);
         $this->em->flush();
         
         return $d;
     }
+
+    public function updateFrom(UpdateDeliveryModel $model, string $deliveryId): Delivery {
+
+        $userId = $this->security->getUser() ? $this->security->getUser()->getUserIdentifier() : null;
+    
+        /** @var User $user */
+        $user = $this->queries->ask(new GetUserDetails($userId));
+        
+        $d = $this->findDelivery($deliveryId);
+    
+        $d->setType($model->type ?? $d->getType());
+        $d->setDescription($model->description ?? $d->getDescription());
+        $d->setRecipient($model->recipient ?? $d->getRecipient());
+        $d->setCustomer($model->customer ?? $d->getCustomer());
+        $d->setUpdatedAt(new \DateTimeImmutable('now'));
+        $d->setUpdatedBy($user ? $user->getId() : 'SYSTEM');
+        $d->setPickupAddress($model->pickupAddress ?? $d->getPickupAddress());
+        $d->setDeliveryAddress($model->deliveryAddress ?? $d->getDeliveryAddress());
+        $d->setAdditionalInformation($model->additionalInformation ?? $d->getAdditionalInformation());
+        $d->setTownship(
+            $model->deliveryAddress && $model->deliveryAddress->getTownship() 
+                ? $model->deliveryAddress->getTownship()->getId() 
+                : $d->getTownship()
+        );
+        $d->setZone(
+            $model->deliveryAddress && $model->deliveryAddress->getTownship() && $model->deliveryAddress->getTownship()->getZone() 
+                ? $model->deliveryAddress->getTownship()->getZone()->getId() 
+                : $d->getZone()
+        );
+        
+        $this->em->persist($d);
+        $this->em->flush();
+        
+        return $d;
+    }
+    
 
     private function generateTrackingNumber(string $type, \DateTimeImmutable $deliveryDate): string
     {

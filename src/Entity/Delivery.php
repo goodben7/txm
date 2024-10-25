@@ -10,6 +10,7 @@ use App\Dto\CancelDeliveryDto;
 use App\Dto\CreateDeliveryDto;
 use App\Dto\FinishDeliveryDto;
 use App\Dto\PickupDeliveryDto;
+use App\Dto\UpdateDeliveryDto;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Patch;
 use App\Dto\ValidateDeliveryDto;
@@ -23,6 +24,7 @@ use App\State\CancelDeliveryProcessor;
 use App\State\CreateDeliveryProcessor;
 use App\State\FinishDeliveryProcessor;
 use App\State\PickupDeliveryProcessor;
+use App\State\UpdateDeliveryProcessor;
 use ApiPlatform\Metadata\GetCollection;
 use App\State\ValidateDeliveryProcessor;
 use App\State\InprogressDeliveryProcessor;
@@ -32,7 +34,7 @@ use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
-use ApiPlatform\Doctrine\Common\State\PersistProcessor;
+
 
 #[ORM\Entity(repositoryClass: DeliveryRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -54,8 +56,8 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
         ),
         new Patch(
             security: 'is_granted("ROLE_DELIVERY_UPDATE")',
-            denormalizationContext: ['groups' => 'delivery:patch'],
-            processor: PersistProcessor::class,
+            input: UpdateDeliveryDto::class,
+            processor: UpdateDeliveryProcessor::class,
         ),
         new Post(
             uriTemplate: '/deliveries/cancellations',
@@ -166,7 +168,7 @@ class Delivery
     #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $type = null;
 
-    #[ORM\Column(length: 120)]
+    #[ORM\Column(length: 120, nullable: true)]
     #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $township = null;
 
@@ -253,10 +255,12 @@ class Delivery
     private ?string $zone = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?Address $pickupAddress = null;
 
     #[ORM\ManyToOne(inversedBy: 'deliveries')]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?Address $deliveryAddress = null;
 
@@ -334,7 +338,7 @@ class Delivery
         return $this->township;
     }
 
-    public function setTownship(string $township): static
+    public function setTownship(?string $township): static
     {
         $this->township = $township;
 

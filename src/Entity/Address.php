@@ -48,6 +48,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'label' => 'ipartial',
     'address' => 'ipartial',
     'isMain' => 'exact',
+    'isPublic' => 'exact',
     'customer' => 'exact',
     'recipient' => 'exact'
 ])]
@@ -89,6 +90,10 @@ class Address
     #[ORM\ManyToOne(inversedBy: 'addresses')]
     #[Groups(groups: ['address:get', 'address:post', 'address:patch'])]
     private ?Township $township = null;
+
+    #[ORM\Column]
+    #[Groups(groups: ['customer:get', 'address:get', 'address:post', 'address:patch', 'recipient:get'])]
+    private ?bool $isPublic = false;
 
     public function __construct()
     {
@@ -198,6 +203,18 @@ class Address
     public function setTownship(?Township $township): static
     {
         $this->township = $township;
+
+        return $this;
+    }
+
+    public function isIsPublic(): ?bool
+    {
+        return $this->isPublic;
+    }
+
+    public function setIsPublic(bool $isPublic): static
+    {
+        $this->isPublic = $isPublic;
 
         return $this;
     }
