@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-use App\Entity\User;
+use App\Entity\Profile;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class NewUserModel
@@ -17,10 +17,10 @@ class NewUserModel
         #[Assert\NotBlank]
         public ?string $plainPassword = null, 
 
-        #[Assert\NotBlank()]
-        #[Assert\NotNull()]
-        #[Assert\Choice(callback: [User::class, 'getAvailablesRoles'])]
-        public ?string $roles = null,
+
+        #[Assert\NotNull]
+        #[Assert\NotBlank]
+        public ?Profile $profile = null,
 
         public ?string $phone = null,
 

@@ -20,7 +20,7 @@ class CreateUserProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
 
-        $model = new NewUserModel($data->email, $data->plainPassword, $data->roles, $data->phone, $data->displayName);
+        $model = new NewUserModel($data->email, $data->plainPassword, $data->profile, $data->phone, $data->displayName);
 
         return $this->manager->createFrom($model); 
     }

@@ -7,14 +7,19 @@ use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
 use App\Dto\ChangePasswordDto;
+use App\Dto\SetUserProfileDto;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 use Doctrine\ORM\Mapping as ORM;
+use App\Model\UserProxyIntertace;
+use App\Manager\PermissionManager;
 use App\Repository\UserRepository;
 use App\State\CreateUserProcessor;
 use App\State\DeleteUserProcessor;
+use App\State\SetProfileProcessor;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use App\State\ToggleLockUserProcessor;
 use ApiPlatform\Metadata\GetCollection;
 use App\State\ChangeUserPasswordProcessor;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
@@ -62,7 +67,22 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
         new Delete(
             security: 'is_granted("ROLE_USER_DELETE")',
             processor: DeleteUserProcessor::class
-        )
+        ),
+        new Post(
+            uriTemplate: "users/{id}/lock_toggle",
+            status: 200,
+            denormalizationContext: ['groups' => 'user:lock'],
+            security: 'is_granted("ROLE_USER_LOCK")',
+            processor: ToggleLockUserProcessor::class
+        ),
+        new Post(
+            uriTemplate: "users/{id}/profiles",
+            security: 'is_granted("ROLE_USER_SET_PROFILE")',
+            normalizationContext: ['groups' => 'user:get'],
+            input: SetUserProfileDto::class,
+            processor: SetProfileProcessor::class,
+            status: 200,
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
@@ -71,7 +91,9 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
     'roles' => 'exact',
     'phone' => 'exact',
     'displayName' => 'ipartial',
-    'deleted' => 'exact'
+    'deleted' => 'exact',
+    'profile' => 'exact',
+    'locked' => 'exact'
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
@@ -126,6 +148,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(groups: ['user:get'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column]
+    #[Groups(groups: ['user:get'])]
+    private ?bool $locked = false;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(groups: ['user:get'])]
+    private ?Profile $profile = null;
+
+    #[ORM\Column(length: 8, nullable: true)]
+    #[Groups(['user:get'])]
+    private ?string $personType = null;
+    
     public function getId(): ?string
     {
         return $this->id;
@@ -160,11 +195,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getRoles(): array
     {
-        $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
+        $roles[] = $this->getPersonRole();
 
+        if (UserProxyIntertace::PERSON_ADMIN === $this->personType) {
+            $roles = array_merge($roles, array_values((array)PermissionManager::getInstance()->getPermissionsAsListChoices()));
+        } elseif (null !== $this->profile) {
+            $roles = array_merge($roles, $this->profile->getPermissions());
+        }
+        
         return array_unique($roles);
+    
     }
 
     /**
@@ -293,5 +335,97 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->plainPassword = $plainPassword;
 
         return $this;
+    }
+
+    /**
+     * Get the value of locked
+     */ 
+    public function isLocked(): bool|null
+    {
+        return $this->locked;
+    }
+
+    /**
+     * Set the value of locked
+     *
+     * @return  self
+     */ 
+    public function setLocked($locked): static
+    {
+        $this->locked = $locked;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of profile
+     */ 
+    public function getProfile(): Profile|null
+    {
+        return $this->profile;
+    }
+
+    /**
+     * Set the value of profile
+     *
+     * @return  self
+     */ 
+    public function setProfile($profile): static
+    {
+        $this->profile = $profile;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of personType
+     */ 
+    public function getPersonType(): string|null
+    {
+        return $this->personType;
+    }
+
+    /**
+     * Set the value of personType
+     *
+     * @return  self
+     */ 
+    public function setPersonType($personType): static
+    {
+        $this->personType = $personType;
+
+        return $this;
+    }
+
+    private function getPersonRole(): string
+    {
+        return array_search($this->personType, [
+            "ROLE_DLV_PRS" => UserProxyIntertace::PERSON_DLV_PRS,
+            "ROLE_ADMIN" => UserProxyIntertace::PERSON_ADMIN,
+            "ROLE_SENDER" => UserProxyIntertace::PERSON_SENDER,
+        ]);
+    }
+
+    public static function getAcceptedPersonList(): array
+    {
+        return [
+            UserProxyIntertace::PERSON_SENDER,
+            UserProxyIntertace::PERSON_DLV_PRS,
+            UserProxyIntertace::PERSON_ADMIN
+        ];
+    }
+
+    public static function getPersonTypesAsChoices(): array
+    {
+        return [
+            "Expéditeur" => UserProxyIntertace::PERSON_SENDER,
+            "Livreur" => UserProxyIntertace::PERSON_DLV_PRS,
+            "Admin" => UserProxyIntertace::PERSON_ADMIN,
+        ];
+    }
+
+    public static function getPersonTypesAsList(): array
+    {
+        return array_values(self::getPersonTypesAsChoices());
     }
 }

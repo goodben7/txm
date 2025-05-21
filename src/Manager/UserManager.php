@@ -3,6 +3,7 @@
 namespace App\Manager;
 
 use App\Entity\User;
+use App\Entity\Profile;
 use App\Model\NewUserModel;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
@@ -28,7 +29,8 @@ class UserManager
         $user->setPassword($this->hasher->hashPassword($user, $model->plainPassword));
         $user->setPhone($model->phone);
         $user->setDisplayName($model->displayName);
-        $user->setRoles([$model->roles]);
+        $user->setProfile($model->profile);
+        $user->setPersonType($model->profile->getPersonType());
 
 
         $this->em->persist($user);
@@ -94,5 +96,55 @@ class UserManager
 
         return $user;
     }
+
+    public function lockOrUnlockUser(string|User $user): User
+    {
+        if (is_string($user)) {
+            $user = $this->findUser($user);
+        }
+
+        $locked = $user->isLocked();
+        $user->setLocked(!$locked);
+
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return $user;
+    }
+
+    public function setUserProfile(string|User $user, null|string|Profile $profile = null): User 
+    {
+        if (is_string($user)) {
+            $user = $this->findUser($user);
+        }
+
+        if (null === $profile) {
+            $user->setProfile(null);
+        }
+        else {
+            if (is_string($profile)) {
+                /** @var Profile  */
+                $profile = $this->em->find(Profile::class, $profile);
+                if (null === $profile) {
+                    throw new InvalidActionInputException(sprintf('cannot find profile with id: %s', $profile));
+                }
+            }
+            
+
+            if ($user->getPersonType() === null) {
+                $user->setPersonType($profile->getPersonType());
+            } elseif ($user->getPersonType() !== $profile->getPersonType()) {
+                throw new InvalidActionInputException('invalid profile. Mismatch person type');
+            }
+
+            $user->setProfile($profile);
+        }
+
+        $this->em->persist($user);
+        $this->em->flush();
+        
+        return $user;
+    }
+    
 
 }
