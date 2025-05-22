@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\User;
 use App\Manager\UserManager;
+use App\Model\UserProxyIntertace;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -41,7 +42,7 @@ class CreateUserCommand extends Command
 
             $u = new User();
             $u->setEmail($email);
-            $u->setRoles([User::ROLE_ADMIN]);
+            $u->setPersonType(UserProxyIntertace::PERSON_ADMIN);
             $u->setPlainPassword($password);
 
             $this->um->create($u);
