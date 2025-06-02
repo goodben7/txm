@@ -27,6 +27,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE', fields: ['phone'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USER', fields: ['userId'])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => 'customer:get'], 
@@ -62,7 +63,8 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'phone' => 'ipartial',
     'phone2' => 'ipartial',
     'email' => 'ipartial',
-    'deleted' => 'exact'
+    'deleted' => 'exact',
+    'userId' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
@@ -95,7 +97,7 @@ class Customer
     private ?string $phone2 = null;
 
     #[ORM\Column(length: 180, nullable: true)]
-    #[Groups(groups: ['customer:get', 'customer:patch'])]
+    #[Groups(groups: ['customer:get'])]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -135,6 +137,10 @@ class Customer
      */
     #[ORM\OneToMany(targetEntity: DeliveryModel::class, mappedBy: 'customer')]
     private Collection $deliveryModels;
+
+    #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(groups: ['customer:get'])]
+    private ?string $userId = null;
 
     public function __construct()
     {
@@ -375,6 +381,26 @@ class Customer
                 $deliveryModel->setCustomer(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * Get the value of userId
+     */ 
+    public function getUserId(): string|null
+    {
+        return $this->userId;
+    }
+
+    /**
+     * Set the value of userId
+     *
+     * @return  self
+     */ 
+    public function setUserId($userId): static
+    {
+        $this->userId = $userId;
 
         return $this;
     }
