@@ -57,4 +57,7 @@ return static function (): iterable {
     yield Permission::new('ROLE_ZONE_LIST', "Consulter la liste des zones");
     yield Permission::new('ROLE_ZONE_DETAILS', "Consulter les détails d'une zone");
     yield Permission::new('ROLE_ZONE_UPDATE', "Modifier une zone");
+    
+    yield Permission::new('ROLE_ACTIVITY_LIST', "Consulter la liste des activités");
+    yield Permission::new('ROLE_ACTIVITY_VIEW', "Consulter les détails d'une activité");
 };

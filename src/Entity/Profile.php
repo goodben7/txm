@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
+use App\Model\RessourceInterface;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
@@ -55,7 +56,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
-class Profile
+class Profile implements RessourceInterface
 {
     public const ID_PREFIX = "PR";
 

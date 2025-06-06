@@ -4,7 +4,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "api-platform/core": "^4.0",
@@ -28,6 +28,7 @@
         "symfony/http-client": "7.1.*",
         "symfony/intl": "7.1.*",
         "symfony/mailer": "7.1.*",
+        "symfony/mailer-send-mailer": "7.1.*",
         "symfony/mime": "7.1.*",
         "symfony/monolog-bundle": "^3.0",
         "symfony/notifier": "7.1.*",

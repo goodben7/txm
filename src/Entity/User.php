@@ -29,6 +29,7 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
+use App\Model\RessourceInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
@@ -97,10 +98,12 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, RessourceInterface
 {
     const ID_PREFIX = "US";
     const ROLE_ADMIN = 'ROLE_ADMIN';
+
+    public const EVENT_USER_CREATED = "registrated";
 
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
@@ -427,5 +430,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public static function getPersonTypesAsList(): array
     {
         return array_values(self::getPersonTypesAsChoices());
+    }
+
+    public function __toString()
+    {
+        return $this->getDisplayName() ?? sprintf("User %s", $this->id);
     }
 }
