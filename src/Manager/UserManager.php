@@ -5,6 +5,7 @@ namespace App\Manager;
 use App\Entity\User;
 use App\Entity\Profile;
 use App\Model\NewUserModel;
+use App\Service\ActivityEventDispatcher;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
 use App\Exception\InvalidActionInputException;
@@ -15,7 +16,8 @@ class UserManager
 {
     public function __construct(
         private EntityManagerInterface $em, 
-        private UserPasswordHasherInterface $hasher
+        private UserPasswordHasherInterface $hasher,
+        private ActivityEventDispatcher $eventDispatcher,
     )
     {
     }
@@ -36,6 +38,8 @@ class UserManager
         $this->em->persist($user);
         $this->em->flush();
         
+        $this->eventDispatcher->dispatch($user, User::EVENT_USER_CREATED);
+
         return $user;
     }
     public function create(User $user): User 
