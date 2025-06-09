@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use App\Entity\Customer;
+use App\Entity\RecipientType;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class NewRecipientModel
@@ -26,7 +27,9 @@ class NewRecipientModel
         public ?string $phone2 = null,
 
         #[Assert\Email]
-        public ?string $email = null
+        public ?string $email = null,
+
+        public ?RecipientType $recipientType = null
 
     )
     {  

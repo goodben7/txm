@@ -4,6 +4,7 @@ namespace App\Manager;
 
 use App\Entity\Recipient;
 use App\Model\NewRecipientModel;
+use App\Service\ActivityEventDispatcher;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
 use App\Exception\UnauthorizedActionException;
@@ -12,6 +13,7 @@ class RecipientManager
 {
     public function __construct(
         private EntityManagerInterface $em, 
+        private ActivityEventDispatcher $eventDispatcher,
     )
     {
     }
@@ -26,6 +28,7 @@ class RecipientManager
         $r->setPhone2($model->phone2);
         $r->setEmail($model->email);
         $r->setCreatedAt(new \DateTimeImmutable('now'));
+        $r->setRecipientType($model->recipientType);
 
         foreach ($model->addresses as $addr) {
             $r->addAddress($addr);
@@ -33,6 +36,8 @@ class RecipientManager
 
         $this->em->persist($r);
         $this->em->flush();
+
+        $this->eventDispatcher->dispatch($r, Recipient::EVENT_USER_RECIPIENT);
         
         return $r;
     }

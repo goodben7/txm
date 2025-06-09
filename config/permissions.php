@@ -47,6 +47,11 @@ return static function (): iterable {
     yield Permission::new('ROLE_RECIPIENT_DETAILS', "Consulter les détails d'un destinataire");
     yield Permission::new('ROLE_RECIPIENT_UPDATE', "Modifier un destinataire");
     yield Permission::new('ROLE_RECIPIENT_DELETE', "Supprimer un destinataire");
+
+    yield Permission::new('ROLE_RECIPIENT_TYPE_CREATE', "Créer un type de destinataire");
+    yield Permission::new('ROLE_RECIPIENT_TYPE_LIST', "Consulter la liste des types de destinataire");
+    yield Permission::new('ROLE_RECIPIENT_TYPE_DETAILS', "Consulter les détails d'un type de destinataire");
+    yield Permission::new('ROLE_RECIPIENT_TYPE_UPDATE', "Modifier un type de destinataire");
     
     yield Permission::new('ROLE_TOWNSHIP_CREATE', "Créer un township");
     yield Permission::new('ROLE_TOWNSHIP_LIST', "Consulter la liste des townships");

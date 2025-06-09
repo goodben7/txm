@@ -26,7 +26,8 @@ class CreateRecipientProcessor implements ProcessorInterface
             $data->addresses, 
             $data->phone, 
             $data->phone2, 
-            $data->email
+            $data->email,
+            $data->recipientType
         );
  
         return $this->manager->createFrom($model); 

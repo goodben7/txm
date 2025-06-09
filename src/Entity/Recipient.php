@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Patch;
 use App\Dto\CreateRecipientDto;
 use ApiPlatform\Metadata\Delete;
 use Doctrine\ORM\Mapping as ORM;
+use App\Model\RessourceInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
@@ -63,13 +64,17 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'phone2' => 'ipartial',
     'email' => 'ipartial',
     'deleted' => 'exact',
-    'customer' => 'exact'
+    'customer' => 'exact',
+    'recipientType' => 'exact',
+
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
-class Recipient
+class Recipient implements RessourceInterface
 {
-    const ID_PREFIX = "RE";
+    public const string ID_PREFIX = "RE";
+
+    public const string EVENT_USER_RECIPIENT = "registrated";
 
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
@@ -125,6 +130,10 @@ class Recipient
     #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'recipient', cascade: ['all'])]
     #[Groups(groups: ['recipient:get'])]
     private Collection $addresses;
+
+    #[ORM\ManyToOne]
+    #[Groups(groups: ['recipient:get', 'recipient:patch'])]
+    private ?RecipientType $recipientType = null;
 
     public function __construct()
     {
@@ -311,6 +320,18 @@ class Recipient
     public function setPhone2($phone2)
     {
         $this->phone2 = $phone2;
+
+        return $this;
+    }
+
+    public function getRecipientType(): ?RecipientType
+    {
+        return $this->recipientType;
+    }
+
+    public function setRecipientType(?RecipientType $recipientType): static
+    {
+        $this->recipientType = $recipientType;
 
         return $this;
     }
