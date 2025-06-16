@@ -15,6 +15,7 @@ use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Patch;
 use App\Dto\ValidateDeliveryDto;
 use Doctrine\ORM\Mapping as ORM;
+use App\Model\RessourceInterface;
 use App\Dto\InprogressDeliveryDto;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -125,21 +126,24 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt'])]
 
-class Delivery
+class Delivery implements RessourceInterface
 {
-    const ID_PREFIX = "DE";
+    public const string ID_PREFIX = "DE";
 
-    const TYPE_PACKAGE = "P";
-    const TYPE_MAIL = "M";
+    public const string TYPE_PACKAGE = "P";
+    public const string TYPE_MAIL = "M";
 
-    const STATUS_PENDING = 'P';
-    const STATUS_VALIDATED = 'V';
-    const STATUS_PICKUPED = 'U';
-    const STATUS_INPROGRESS = 'I';
-    const STATUS_DELAYED = 'D';
-    const STATUS_TERMINATED = 'T';
-    const STATUS_CANCELED = 'C';
-    
+    public const string STATUS_PENDING = 'P';
+    public const string STATUS_VALIDATED = 'V';
+    public const string STATUS_PICKUPED = 'U';
+    public const string STATUS_INPROGRESS = 'I';
+    public const string STATUS_DELAYED = 'D';
+    public const string STATUS_TERMINATED = 'T';
+    public const string STATUS_CANCELED = 'C';
+
+    public const string CREATED_FROM_WEB_APP = "WEB_APP";
+    public const string CREATED_FROM_MOBILE_APP = "MOBILE_APP";
+    public const string CREATED_FROM_API = "API";
 
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
@@ -267,6 +271,14 @@ class Delivery
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(groups: ['delivery:get', 'delivery:patch'])]
     private ?string $additionalInformation = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
+    private ?string $createdFrom = null;
+
+    #[ORM\Column(length: 5, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
+    private ?string $createdByTypePerson = null;
 
     public function getId(): ?string
     {
@@ -623,6 +635,30 @@ class Delivery
     public function setAdditionalInformation(?string $additionalInformation): static
     {
         $this->additionalInformation = $additionalInformation;
+
+        return $this;
+    }
+
+    public function getCreatedFrom(): ?string
+    {
+        return $this->createdFrom;
+    }
+
+    public function setCreatedFrom(?string $createdFrom): static
+    {
+        $this->createdFrom = $createdFrom;
+
+        return $this;
+    }
+
+    public function getCreatedByTypePerson(): ?string
+    {
+        return $this->createdByTypePerson;
+    }
+
+    public function setCreatedByTypePerson(?string $createdByTypePerson): static
+    {
+        $this->createdByTypePerson = $createdByTypePerson;
 
         return $this;
     }

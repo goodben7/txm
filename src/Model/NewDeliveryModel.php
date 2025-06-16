@@ -38,6 +38,9 @@ class NewDeliveryModel
 
         public ?string $additionalInformation = null,
 
+        #[Assert\Choice(choices: [Delivery::CREATED_FROM_API, Delivery::CREATED_FROM_MOBILE_APP, Delivery::CREATED_FROM_WEB_APP])]
+        public ?string $createdFrom = null,
+
     )
     {  
     }

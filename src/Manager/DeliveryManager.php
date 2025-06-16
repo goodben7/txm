@@ -47,6 +47,8 @@ class DeliveryManager
         $d->setTrackingNumber($this->generateTrackingNumber($model->type, $model->deliveryDate));
         $d->setTownship($model->deliveryAddress ? $model->deliveryAddress->getTownship()?->getId() : null);
         $d->setZone($model->deliveryAddress ? $model->deliveryAddress->getTownship()?->getZone()?->getId() : null);
+        $d->setCreatedFrom($model->createdFrom);
+        $d->setCreatedByTypePerson($user ? $user?->getPersonType() : null);
         
         $this->em->persist($d);
         $this->em->flush();

@@ -1,7 +1,8 @@
 <?php 
 
 namespace App\MessageHandler\Command;
- 
+
+use App\Entity\DeliveryModel;
 use App\Entity\Recipient;
 use Psr\Log\LoggerInterface;
 use App\Model\NewDeliveryModel;
@@ -66,8 +67,8 @@ class CreateDeliveryCommandHandler implements CommandHandlerInterface
                 $devliverModel->getCustomer(),
                 $pickupAddress,
                 null,
-                $devliverModel->getAddress()
-
+                $devliverModel->getAddress(),
+                DeliveryModel::CREATED_FROM_API
             );
     
             $d = $this->deliveryManager->createFrom($model); 

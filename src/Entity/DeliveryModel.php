@@ -6,6 +6,7 @@ use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Model\RessourceInterface;
 use App\Dto\CreateDeliveryModelDto;
 use ApiPlatform\Metadata\ApiResource;
 use App\Model\DeliveryModelInterface;
@@ -23,12 +24,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
         )
     ]
 )]
-class DeliveryModel implements DeliveryModelInterface 
+class DeliveryModel implements DeliveryModelInterface, RessourceInterface
 {
-    const ID_PREFIX = "DM";
+    public const string ID_PREFIX = "DM";
 
-    const TYPE_PACKAGE = "P";
-    const TYPE_MAIL = "M";
+    public const string TYPE_PACKAGE = "P";
+    public const string TYPE_MAIL = "M";
+
+    public const string CREATED_FROM_WEB_APP = "WEB_APP";
+    public const string CREATED_FROM_MOBILE_APP = "MOBILE_APP";
+    public const string CREATED_FROM_API = "API";
 
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
