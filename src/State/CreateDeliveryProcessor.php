@@ -28,7 +28,8 @@ class CreateDeliveryProcessor implements ProcessorInterface
             $data->customer,
             $data->pickupAddress,
             $data->deliveryAddress,
-            $data->additionalInformation
+            $data->additionalInformation,
+            $data->createdFrom
 
         );
  
