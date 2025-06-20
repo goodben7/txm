@@ -78,7 +78,7 @@ class Profile implements RessourceInterface
     #[Groups(['profile:get', 'profile:post', 'profile:patch'])]
     private array $permissions = [];
 
-    #[ORM\Column(length: 3)]
+    #[ORM\Column(length: 8)]
     #[Assert\Choice(callback: [User::class, 'getPersonTypesAsList'])]
     #[Groups(['profile:get', 'profile:post'])]
     private ?string $personType = null;

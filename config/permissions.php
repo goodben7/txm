@@ -65,4 +65,10 @@ return static function (): iterable {
     
     yield Permission::new('ROLE_ACTIVITY_LIST', "Consulter la liste des activités");
     yield Permission::new('ROLE_ACTIVITY_VIEW', "Consulter les détails d'une activité");
+
+    yield Permission::new('ROLE_DELIVERY_PERSON_DETAILS', "Consulter les détails d'un livreur");
+    yield Permission::new('ROLE_DELIVERY_PERSON_LIST', "Consulter la liste des livreurs");
+    yield Permission::new('ROLE_DELIVERY_PERSON_CREATE', "Créer un livreur");
+    yield Permission::new('ROLE_DELIVERY_PERSON_UPDATE', "Modifier un livreur");
+    yield Permission::new('ROLE_DELIVERY_PERSON_DELETE', "Supprimer un livreur");
 };
