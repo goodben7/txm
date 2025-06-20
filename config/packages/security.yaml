@@ -6,50 +6,10 @@ security:
     providers:
         # used to reload user from session & other features (e.g. switch_user)
         app_user_provider:
-            entity:
-                class: App\Entity\User
-                property: email
-    role_hierarchy:
-        ROLE_ADMIN: 
-            - ROLE_USER_DETAILS
-            - ROLE_USER_LIST
-            - ROLE_USER_CREATE
-            - ROLE_USER_CHANGE_PWD
-            - ROLE_USER_EDIT
-            - ROLE_USER_DELETE
-            - ROLE_ZONE_DETAILS
-            - ROLE_ZONE_LIST
-            - ROLE_ZONE_CREATE
-            - ROLE_ZONE_UPDATE
-            - ROLE_RECIPIENT_DETAILS
-            - ROLE_RECIPIENT_LIST
-            - ROLE_RECIPIENT_CREATE
-            - ROLE_RECIPIENT_UPDATE
-            - ROLE_RECIPIENT_DELETE
-            - ROLE_CUSTOMER_DETAILS
-            - ROLE_CUSTOMER_LIST
-            - ROLE_CUSTOMER_CREATE
-            - ROLE_CUSTOMER_UPDATE
-            - ROLE_CUSTOMER_DELETE
-            - ROLE_DELIVERY_DETAILS
-            - ROLE_DELIVERY_LIST
-            - ROLE_DELIVERY_CREATE
-            - ROLE_DELIVERY_UPDATE
-            - ROLE_DELIVERY_CANCEL
-            - ROLE_DELIVERY_VALIDATION
-            - ROLE_DELIVERY_PICKUP
-            - ROLE_DELIVERY_INPROGRESS
-            - ROLE_DELIVERY_DELAY
-            - ROLE_DELIVERY_DELIVER
-            - ROLE_ADDRESS_DETAILS
-            - ROLE_ADDRESS_LIST
-            - ROLE_ADDRESS_CREATE
-            - ROLE_ADDRESS_UPDATE
-            - ROLE_TOWNSHIP_DETAILS
-            - ROLE_TOWNSHIP_LIST
-            - ROLE_TOWNSHIP_CREATE
-            - ROLE_TOWNSHIP_UPDATE
-
+            id: App\Provider\MultiFieldUserProvider
+            #entity:
+                #class: App\Entity\User
+                #property: email
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -60,7 +20,7 @@ security:
             provider: app_user_provider
             json_login:
                 check_path: /api/authentication_token
-                username_path: email
+                username_path: username
                 password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure

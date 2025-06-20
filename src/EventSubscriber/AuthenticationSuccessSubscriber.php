@@ -27,10 +27,10 @@ class AuthenticationSuccessSubscriber implements EventSubscriberInterface
 
     public function onAuthenticationSuccess(AuthenticationSuccessEvent $event)
     {
-        $email = $this->security->getUser()->getUserIdentifier();
+        $identifier = $this->security->getUser()->getUserIdentifier();
 
         /** @var User|null $user */
-        $user = $this->userRepository->findOneBy(['email' => $email]);
+        $user = $this->userRepository->findByEmailOrPhone($identifier);
 
 
         if ($user->isDeleted()) {
