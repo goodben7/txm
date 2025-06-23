@@ -4,15 +4,17 @@ namespace App\Manager;
 
 use App\Entity\User;
 use App\Entity\Delivery;
+use App\Entity\DeliveryPerson;
 use App\Model\NewDeliveryModel;
+use App\Model\UpdateDeliveryModel;
 use App\Repository\UserRepository;
 use App\Message\Query\GetUserDetails;
 use App\Message\Query\QueryBusInterface;
+use App\Service\ActivityEventDispatcher;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
 use Symfony\Bundle\SecurityBundle\Security;
 use App\Exception\InvalidActionInputException;
-use App\Model\UpdateDeliveryModel;
 
 class DeliveryManager
 {
@@ -21,6 +23,7 @@ class DeliveryManager
         private Security $security,
         private UserRepository $userRepository,
         private QueryBusInterface $queries,
+        private ActivityEventDispatcher $eventDispatcher,
     )
     {
     }
@@ -123,10 +126,10 @@ class DeliveryManager
             throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
         }
 
-        $email = $this->security->getUser()->getUserIdentifier();
+        $identifier = $this->security->getUser()->getUserIdentifier();
 
         /** @var User|null $user */
-        $user = $this->userRepository->findOneBy(['email' => $email]);
+        $user = $this->userRepository->findByEmailOrPhone($identifier);
 
         $delivery->setStatus(Delivery::STATUS_CANCELED);
         $delivery->setMessage($message);
@@ -140,24 +143,27 @@ class DeliveryManager
 
     }
 
-    public function validate(Delivery $delivery) : Delivery
+    public function validate(Delivery $delivery, DeliveryPerson $deliveryPerson) : Delivery
     {
 
         if ( !in_array($delivery->getStatus(), [Delivery::STATUS_PENDING, Delivery::STATUS_DELAYED])){
             throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
         }
 
-        $email = $this->security->getUser()->getUserIdentifier();
+        $identifier = $this->security->getUser()->getUserIdentifier();
 
         /** @var User|null $user */
-        $user = $this->userRepository->findOneBy(['email' => $email]);
+        $user = $this->userRepository->findByEmailOrPhone($identifier);
 
         $delivery->setStatus(Delivery::STATUS_VALIDATED);
         $delivery->setValidatedAt(new \DateTimeImmutable('now'));
         $delivery->setValidatedBy($user->getId());
+        $delivery->setDeliveryPerson($deliveryPerson);
 
         $this->em->persist($delivery);
         $this->em->flush();
+
+        $this->eventDispatcher->dispatch($delivery, Delivery::EVENT_DELIVERY_VALIDATED);
 
         return $delivery; 
 
@@ -170,10 +176,10 @@ class DeliveryManager
             throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
         }
 
-        $email = $this->security->getUser()->getUserIdentifier();
+        $identifier = $this->security->getUser()->getUserIdentifier();
 
         /** @var User|null $user */
-        $user = $this->userRepository->findOneBy(['email' => $email]);
+        $user = $this->userRepository->findByEmailOrPhone($identifier);
 
         $delivery->setStatus(Delivery::STATUS_PICKUPED);
         $delivery->setPickupedAt(new \DateTimeImmutable('now'));
@@ -193,10 +199,10 @@ class DeliveryManager
             throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
         }
 
-        $email = $this->security->getUser()->getUserIdentifier();
+        $identifier = $this->security->getUser()->getUserIdentifier();
 
         /** @var User|null $user */
-        $user = $this->userRepository->findOneBy(['email' => $email]);
+        $user = $this->userRepository->findByEmailOrPhone($identifier);
 
         $delivery->setStatus(Delivery::STATUS_INPROGRESS);
         $delivery->setInprogressAt(new \DateTimeImmutable('now'));
@@ -216,10 +222,10 @@ class DeliveryManager
             throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
         }
 
-        $email = $this->security->getUser()->getUserIdentifier();
+        $identifier = $this->security->getUser()->getUserIdentifier();
 
         /** @var User|null $user */
-        $user = $this->userRepository->findOneBy(['email' => $email]);
+        $user = $this->userRepository->findByEmailOrPhone($identifier);
 
         $delivery->setStatus(Delivery::STATUS_DELAYED);
         $delivery->setMessage($message);
@@ -241,10 +247,10 @@ class DeliveryManager
             throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
         }
 
-        $email = $this->security->getUser()->getUserIdentifier();
+        $identifier = $this->security->getUser()->getUserIdentifier();
 
         /** @var User|null $user */
-        $user = $this->userRepository->findOneBy(['email' => $email]);
+        $user = $this->userRepository->findByEmailOrPhone($identifier);
 
         $delivery->setStatus(Delivery::STATUS_TERMINATED);
         $delivery->setTerminedAt(new \DateTimeImmutable('now'));
@@ -252,6 +258,33 @@ class DeliveryManager
 
         $this->em->persist($delivery);
         $this->em->flush();
+
+        return $delivery; 
+
+    }
+
+    public function reassigne(Delivery $delivery, DeliveryPerson $deliveryPerson, string $message) : Delivery
+    {
+
+        if ( !in_array($delivery->getStatus(), [Delivery::STATUS_VALIDATED, Delivery::STATUS_DELAYED, Delivery::STATUS_PICKUPED])){
+            throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
+        }
+
+        $identifier = $this->security->getUser()->getUserIdentifier();
+
+        /** @var User|null $user */
+        $user = $this->userRepository->findByEmailOrPhone($identifier);
+
+        $delivery->setStatus(Delivery::STATUS_VALIDATED);
+        $delivery->setReassignedAt(new \DateTimeImmutable('now'));
+        $delivery->setReassignedBy($user->getId());
+        $delivery->setMessage($message);
+        $delivery->setDeliveryPerson($deliveryPerson);
+
+        $this->em->persist($delivery);
+        $this->em->flush();
+
+        $this->eventDispatcher->dispatch($delivery, Delivery::EVENT_DELIVERY_REASSIGNED);
 
         return $delivery; 
 

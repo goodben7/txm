@@ -112,7 +112,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
     #[Groups(groups: ['user:get'])]
     private ?string $id = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180, nullable: true)]
     #[Groups(groups: ['user:get'])]
     private ?string $email = null;
 
@@ -174,7 +174,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
         return $this->email;
     }
 
-    public function setEmail(string $email): static
+    public function setEmail(?string $email): static
     {
         $this->email = $email;
 
