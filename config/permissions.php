@@ -41,8 +41,9 @@ return static function (): iterable {
     yield Permission::new('ROLE_DELIVERY_INPROGRESS', "Mettre une livraison en cours");
     yield Permission::new('ROLE_DELIVERY_DELAY', "Reporter une livraison");
     yield Permission::new('ROLE_DELIVERY_DELIVER', "Finaliser une livraison");
-    yield Permission::new('ROLE_RECIPIENT_CREATE', "Créer un destinataire");
+    yield Permission::new('ROLE_DELIVERY_REASSIGNATION', "Réassigner une livraison"); 
     
+    yield Permission::new('ROLE_RECIPIENT_CREATE', "Créer un destinataire");
     yield Permission::new('ROLE_RECIPIENT_LIST', "Consulter la liste des destinataires");
     yield Permission::new('ROLE_RECIPIENT_DETAILS', "Consulter les détails d'un destinataire");
     yield Permission::new('ROLE_RECIPIENT_UPDATE', "Modifier un destinataire");

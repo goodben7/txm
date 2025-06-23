@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 use Doctrine\ORM\Mapping as ORM;
 use App\Model\RessourceInterface;
+use ApiPlatform\Metadata\ApiFilter;
 use App\Dto\CreateDeliveryPersonDto;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
@@ -16,6 +17,7 @@ use App\Repository\DeliveryPersonRepository;
 use App\State\CreateDeliveryPersonProcessor;
 use App\State\DeleteDeliveryPersonProcessor;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
@@ -50,6 +52,17 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
         )
     ]
 )]
+#[ApiFilter(SearchFilter::class, properties: [
+    'id' => 'exact',
+    'status' => 'exact',
+    'fullname' => 'ipartial',
+    'vehicleType' => 'exact',
+    'licenseNumber' => 'exact',
+    'vehicleLicensePlate' => 'exact',
+    'identificationNumber' => 'exact',
+    'userId' => 'exact',
+    'deleted' => 'exact',
+])]
 class DeliveryPerson implements RessourceInterface
 {
     public const string ID_PREFIX = "DE";
@@ -67,11 +80,11 @@ class DeliveryPerson implements RessourceInterface
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(IdGenerator::class)]
     #[ORM\Column(length: 16)]
-    #[Groups(['delivery_person:get'])]
+    #[Groups(['delivery_person:get', 'delivery:get'])]
     private ?string $id = null;
 
     #[ORM\Column(length: 120)]
-    #[Groups(['delivery_person:get', 'delivery_person:patch'])]
+    #[Groups(['delivery_person:get', 'delivery_person:patch', 'delivery:get'])]
     private ?string $fullname = null;
 
     #[ORM\Column(length: 15, nullable: true)]

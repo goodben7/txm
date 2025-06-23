@@ -19,6 +19,7 @@ use App\Model\RessourceInterface;
 use App\Dto\InprogressDeliveryDto;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use App\Dto\ReassignationDeliveryDto;
 use App\State\DelayDeliveryProcessor;
 use App\Repository\DeliveryRepository;
 use App\State\CancelDeliveryProcessor;
@@ -29,6 +30,7 @@ use App\State\UpdateDeliveryProcessor;
 use ApiPlatform\Metadata\GetCollection;
 use App\State\ValidateDeliveryProcessor;
 use App\State\InprogressDeliveryProcessor;
+use App\State\ReassignationDeliveryProcessor;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
@@ -102,6 +104,13 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
             processor: FinishDeliveryProcessor::class,
             status: 200
         ),
+        new Post(
+            uriTemplate: '/deliveries/reassignations',
+            security: 'is_granted("ROLE_DELIVERY_REASSIGNATION")',
+            input: ReassignationDeliveryDto::class,
+            processor: ReassignationDeliveryProcessor::class,
+            status: 200
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
@@ -121,10 +130,15 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
     'canceledBy' => 'exact',
     'DelayedBy' => 'exact',
     'trackingNumber' => 'exact',
-    'terminedBy' => 'exact'
+    'terminedBy' => 'exact',
+    'reassignedBy' => 'exact',
+    'createdFrom' => 'exact',
+    'createdByTypePerson' => 'exact',
+    'deliveryPerson' => 'exact',
+    'deliveryPerson.fullname' => 'ipartial',
 ])]
-#[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt'])]
-#[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt'])]
+#[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt', 'reassignedAt'])]
+#[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt', 'reassignedAt'])]
 
 class Delivery implements RessourceInterface
 {
@@ -144,6 +158,10 @@ class Delivery implements RessourceInterface
     public const string CREATED_FROM_WEB_APP = "WEB_APP";
     public const string CREATED_FROM_MOBILE_APP = "MOBILE_APP";
     public const string CREATED_FROM_API = "API";
+
+    public const string EVENT_DELIVERY_CREATED = "created";
+    public const string EVENT_DELIVERY_VALIDATED = "validated";
+    public const string EVENT_DELIVERY_REASSIGNED = "reassigned";
 
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
@@ -279,6 +297,19 @@ class Delivery implements RessourceInterface
     #[ORM\Column(length: 5, nullable: true)]
     #[Groups(groups: ['delivery:get'])]
     private ?string $createdByTypePerson = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
+    private ?DeliveryPerson $deliveryPerson = null;
+
+    #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
+    private ?string $reassignedBy = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
+    private ?\DateTimeImmutable $reassignedAt = null;
 
     public function getId(): ?string
     {
@@ -659,6 +690,58 @@ class Delivery implements RessourceInterface
     public function setCreatedByTypePerson(?string $createdByTypePerson): static
     {
         $this->createdByTypePerson = $createdByTypePerson;
+
+        return $this;
+    }
+
+    public function getDeliveryPerson(): ?DeliveryPerson
+    {
+        return $this->deliveryPerson;
+    }
+
+    public function setDeliveryPerson(?DeliveryPerson $deliveryPerson): static
+    {
+        $this->deliveryPerson = $deliveryPerson;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of reassignedBy
+     */ 
+    public function getReassignedBy(): string|null
+    {
+        return $this->reassignedBy;
+    }
+
+    /**
+     * Set the value of reassignedBy
+     *
+     * @return  self
+     */ 
+    public function setReassignedBy(?string $reassignedBy)
+    {
+        $this->reassignedBy = $reassignedBy;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of reassignedAt
+     */ 
+    public function getReassignedAt(): \DateTimeImmutable|null
+    {
+        return $this->reassignedAt;
+    }
+
+    /**
+     * Set the value of reassignedAt
+     *
+     * @return  self
+     */ 
+    public function setReassignedAt(?\DateTimeImmutable $reassignedAt)
+    {
+        $this->reassignedAt = $reassignedAt;
 
         return $this;
     }

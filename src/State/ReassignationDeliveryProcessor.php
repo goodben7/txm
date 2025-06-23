@@ -2,20 +2,23 @@
 
 namespace App\State;
 
-use ApiPlatform\State\ProcessorInterface;
 use App\Manager\DeliveryManager;
+use ApiPlatform\State\ProcessorInterface;
 
-class ValidateDeliveryProcessor implements ProcessorInterface
+class ReassignationDeliveryProcessor implements ProcessorInterface
 {
     public function __construct(private DeliveryManager $manager)
-    {   
+    {
     }
 
     /**
-     * @param \App\Dto\ValidateDeliveryDto $data 
+     * @param \App\Dto\ReassignationDeliveryDto $data 
      */
     public function process(mixed $data, \ApiPlatform\Metadata\Operation $operation, array $uriVariables = [], array $context = [])
     {
-        return $this->manager->validate($data->delivery, $data->deliveryPerson);
+        return $this->manager->reassigne($data->delivery, $data->deliveryPerson, $data->message);
     }
+
+
+    
 }
