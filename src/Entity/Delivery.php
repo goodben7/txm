@@ -160,6 +160,12 @@ class Delivery implements RessourceInterface
     public const string CREATED_FROM_API = "API";
 
     public const string EVENT_DELIVERY_CREATED = "created";
+    public const string EVENT_DELIVERY_UPDATED = "updated";
+    public const string EVENT_DELIVERY_CANCELED = "canceled";
+    public const string EVENT_DELIVERY_PICKUPED = "pickuped";
+    public const string EVENT_DELIVERY_INPROGRESS = "inprogress";
+    public const string EVENT_DELIVERY_DELAYED = "delayed";
+    public const string EVENT_DELIVERY_TERMINATED = "terminated";
     public const string EVENT_DELIVERY_VALIDATED = "validated";
     public const string EVENT_DELIVERY_REASSIGNED = "reassigned";
 

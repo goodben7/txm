@@ -6,15 +6,16 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 class ActivityEvent extends Event {
 
-    const ACTION_CREATE = 'created';
-    const ACTION_VIEW = 'viewed';
-    const ACTION_LIST = 'listed';
-    const ACTION_EDIT = 'edited';
-    const ACTION_DELETE = 'deleted';
+    public const string ACTION_CREATE = 'created';
+    public const string ACTION_VIEW = 'viewed';
+    public const string ACTION_LIST = 'listed';
+    public const string ACTION_EDIT = 'edited';
+    public const string ACTION_DELETE = 'deleted';
 
     private ?string $ressourceClass;
+    private ?string $activityDescription;
 
-    public function __construct(private ?RessourceInterface $ressource, private string $activity, ?string $ressourceClass = null)
+    public function __construct(private ?RessourceInterface $ressource, private string $activity, ?string $ressourceClass = null, ?string $activityDescription = null)
     {
         $this->ressourceClass = $ressourceClass;
 
@@ -53,5 +54,13 @@ class ActivityEvent extends Event {
 
     public static function getEventName(string $ressourceFqcn, string $action): string {
         return sprintf('app.%s.%s', strtolower(str_replace('\\', '_', $ressourceFqcn)), $action);
+    }
+
+    /**
+     * Get the value of activityDescription
+     */ 
+    public function getActivityDescription(): string|null
+    {
+        return $this->activityDescription;
     }
 }

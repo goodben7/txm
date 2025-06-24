@@ -32,8 +32,11 @@ class UserActivityLogMessageHandler
             ->setActivity($command->getActivity())
             ->setActivityDescription("")
             ->setRessourceName($ressource->getName())
-            ->setRessourceIdentifier($command->getRessourceIdentifier())
+            ->setRessourceIdentifier(ressourceIdentifier: $command->getRessourceIdentifier())
             ->setUser($command->getUser())
+            ->setActivityDescription( $command->getActivityDescription())
+            ->setTriggeredBy($command->getTriggeredBy())
+            ->setDelivery($command->getDelivery())
             ->setDate($command->getDate());
 
         $this->em->persist($activity);
