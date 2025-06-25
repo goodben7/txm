@@ -1,6 +1,9 @@
 <?php
 namespace App\Message;
 
+use App\Entity\User;
+use App\Entity\Delivery;
+
 class UserActivityLoggedMessage
 {
     public function __construct(
@@ -8,7 +11,10 @@ class UserActivityLoggedMessage
         private \DateTimeImmutable $date,
         private string             $activity,
         private string             $ressourceName,
-        private ?string             $ressourceIdentifier = null,
+        private User               $triggeredBy,
+        private ?Delivery          $delivery = null,
+        private ?string            $ressourceIdentifier = null,
+        private ?string            $activityDescription = null,
     )
     {
     }
@@ -36,5 +42,29 @@ class UserActivityLoggedMessage
     public function getRessourceIdentifier(): ?string
     {
         return $this->ressourceIdentifier;
+    }
+
+    /**
+    * Get the value of activityDescription
+    */ 
+    public function getActivityDescription(): string|null
+    {
+        return $this->activityDescription;
+    }
+
+    /**
+    * Get the value of triggeredBy
+    */ 
+    public function getTriggeredBy(): User
+    {
+        return $this->triggeredBy;
+    }
+
+    /**
+    * Get the value of delivery
+    */ 
+    public function getDelivery(): Delivery|null
+    {
+        return $this->delivery;
     }
 }

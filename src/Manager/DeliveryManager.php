@@ -55,6 +55,13 @@ class DeliveryManager
         
         $this->em->persist($d);
         $this->em->flush();
+
+        $this->eventDispatcher->dispatch(
+            $d, 
+            Delivery::EVENT_DELIVERY_CREATED, 
+            null, 
+            null)
+        ;
         
         return $d;
     }
@@ -90,6 +97,13 @@ class DeliveryManager
         
         $this->em->persist($d);
         $this->em->flush();
+
+        $this->eventDispatcher->dispatch(
+            $d, 
+            Delivery::EVENT_DELIVERY_UPDATED, 
+            null, 
+            null)
+        ;
         
         return $d;
     }
@@ -139,6 +153,13 @@ class DeliveryManager
         $this->em->persist($delivery);
         $this->em->flush();
 
+        $this->eventDispatcher->dispatch(
+            $delivery, 
+            Delivery::EVENT_DELIVERY_CANCELED, 
+            null, 
+            $message)
+        ;
+
         return $delivery; 
 
     }
@@ -163,7 +184,12 @@ class DeliveryManager
         $this->em->persist($delivery);
         $this->em->flush();
 
-        $this->eventDispatcher->dispatch($delivery, Delivery::EVENT_DELIVERY_VALIDATED);
+        $this->eventDispatcher->dispatch(
+            $delivery, 
+            Delivery::EVENT_DELIVERY_VALIDATED, 
+            null, 
+            null)
+        ;
 
         return $delivery; 
 
@@ -188,6 +214,13 @@ class DeliveryManager
         $this->em->persist($delivery);
         $this->em->flush();
 
+        $this->eventDispatcher->dispatch(
+            $delivery, 
+            Delivery::EVENT_DELIVERY_PICKUPED, 
+            null, 
+            null)
+        ;
+
         return $delivery; 
 
     }
@@ -210,6 +243,13 @@ class DeliveryManager
 
         $this->em->persist($delivery);
         $this->em->flush();
+
+        $this->eventDispatcher->dispatch(
+            $delivery, 
+            Delivery::EVENT_DELIVERY_INPROGRESS, 
+            null, 
+            null)
+        ;
 
         return $delivery; 
 
@@ -236,6 +276,13 @@ class DeliveryManager
         $this->em->persist($delivery);
         $this->em->flush();
 
+        $this->eventDispatcher->dispatch(
+            $delivery, 
+            Delivery::EVENT_DELIVERY_DELAYED, 
+            null, 
+            $message)
+        ;
+
         return $delivery; 
 
     }
@@ -258,6 +305,13 @@ class DeliveryManager
 
         $this->em->persist($delivery);
         $this->em->flush();
+
+        $this->eventDispatcher->dispatch(
+            $delivery, 
+            Delivery::EVENT_DELIVERY_TERMINATED, 
+            null, 
+            null)
+        ;
 
         return $delivery; 
 
@@ -284,7 +338,12 @@ class DeliveryManager
         $this->em->persist($delivery);
         $this->em->flush();
 
-        $this->eventDispatcher->dispatch($delivery, Delivery::EVENT_DELIVERY_REASSIGNED);
+        $this->eventDispatcher->dispatch(
+            $delivery, 
+            Delivery::EVENT_DELIVERY_REASSIGNED, 
+            null, 
+            $message)
+        ;
 
         return $delivery; 
 

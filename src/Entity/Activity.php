@@ -2,14 +2,15 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\Get;
+use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use App\Repository\ActivityRepository;
-use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
@@ -26,12 +27,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
     normalizationContext: ['groups' => ['activity:view']],
 )]
 #[ApiFilter(SearchFilter::class, properties: [
-    'date' => 'exact',
+    'id' => 'exact',
     'user' => 'exact',
     'activity' => 'exact',
     'ressourceName' => 'exact',
+    'ressourceIdentifier' => 'exact',
+    'triggeredBy' => 'exact',
+    'delivery' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['date'])]
+#[ApiFilter(DateFilter::class, properties: ['date'])]
 class Activity
 {
     #[ORM\Id]
@@ -63,6 +68,16 @@ class Activity
     #[ORM\Column()]
     #[Groups(['activity:view'])]
     private ?\DateTimeImmutable $date = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['activity:view'])]
+    private ?User $triggeredBy = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['activity:view'])]
+    private ?Delivery $delivery = null;
 
     public function getId(): ?int
     {
@@ -137,6 +152,46 @@ class Activity
     public function setDate(\DateTimeImmutable $date): static
     {
         $this->date = $date;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of triggeredBy
+     */ 
+    public function getTriggeredBy(): User|null
+    {
+        return $this->triggeredBy;
+    }
+
+    /**
+     * Set the value of triggeredBy
+     *
+     * @return  self
+     */ 
+    public function setTriggeredBy(?User $triggeredBy): static
+    {
+        $this->triggeredBy = $triggeredBy;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of delivery
+     */ 
+    public function getDelivery(): Delivery|null
+    {
+        return $this->delivery;
+    }
+
+    /**
+     * Set the value of delivery
+     *
+     * @return  self
+     */ 
+    public function setDelivery(?Delivery $delivery): static
+    {
+        $this->delivery = $delivery;
 
         return $this;
     }
