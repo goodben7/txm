@@ -65,7 +65,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 ])]
 class DeliveryPerson implements RessourceInterface
 {
-    public const string ID_PREFIX = "DE";
+    public const string ID_PREFIX = "DP";
 
     public const string VEHICLE_TYPE_CAR = 'CAR';
     public const string VEHICLE_TYPE_TRUCK = 'TRUCK';

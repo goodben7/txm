@@ -72,4 +72,7 @@ return static function (): iterable {
     yield Permission::new('ROLE_DELIVERY_PERSON_CREATE', "Créer un livreur");
     yield Permission::new('ROLE_DELIVERY_PERSON_UPDATE', "Modifier un livreur");
     yield Permission::new('ROLE_DELIVERY_PERSON_DELETE', "Supprimer un livreur");
+
+    yield Permission::new('ROLE_NOTIFICATION_LIST', "Consulter la liste des notifications");
+    yield Permission::new('ROLE_NOTIFICATION_DETAILS', "Consulter les détails d'une notification");
 };
