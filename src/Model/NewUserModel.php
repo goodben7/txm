@@ -26,6 +26,8 @@ class NewUserModel
 
         public ?string $displayName = null,
 
+        public ?string $holderId = null,
+
     )
     {  
     }

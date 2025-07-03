@@ -100,10 +100,10 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, RessourceInterface
 {
-    const ID_PREFIX = "US";
-    const ROLE_ADMIN = 'ROLE_ADMIN';
+    public const string ID_PREFIX = "US";
+    public const string ROLE_ADMIN = 'ROLE_ADMIN';
 
-    public const EVENT_USER_CREATED = "registrated";
+    public const string EVENT_USER_CREATED = "registrated";
 
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
@@ -163,6 +163,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
     #[ORM\Column(length: 8, nullable: true)]
     #[Groups(['user:get'])]
     private ?string $personType = null;
+
+    #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(['user:get'])]
+    private ?string $holderId = null;
     
     public function getId(): ?string
     {
@@ -435,5 +439,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
     public function __toString()
     {
         return $this->getDisplayName() ?? sprintf("User %s", $this->id);
+    }
+
+    /**
+     * Get the value of holderId
+     */ 
+    public function getHolderId(): string|null
+    {
+        return $this->holderId;
+    }
+
+    /**
+     * Set the value of holderId
+     *
+     * @return  self
+     */ 
+    public function setHolderId(?string $holderId): static
+    {
+        $this->holderId = $holderId;
+
+        return $this;
     }
 }
