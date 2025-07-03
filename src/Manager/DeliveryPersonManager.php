@@ -61,7 +61,8 @@ class DeliveryPersonManager
                 $deliveryPerson->getPhone() ?? $this->passwordGenerator->generateDefaultPassword(),
                 $profile,
                 $deliveryPerson->getPhone(),
-                $deliveryPerson->getFullname()
+                $deliveryPerson->getFullname(),
+                $deliveryPerson->getId()
             )
         );
 
