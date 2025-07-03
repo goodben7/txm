@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ notification.title ?? 'Notification' }} - TINDA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .logo {
+            max-width: 180px;
+        }
+        .content {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #4f46e5;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 20px;
+        }
+        .notification-info {
+            background-color: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .highlight {
+            color: #4f46e5;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="https://i.ibb.co/FbTMy6nT/logo-long.png" alt="TINDA" class="logo">
+        <h2 style="color: #4f46e5; margin-top: 10px;">Votre plateforme de gestion de colis</h2>
+    </div>
+
+    <div class="content">
+        <h2 style="color: #1e293b;">{{ notification.title ?? 'Notification' }}</h2>
+        <div class="notification-info">
+            {{ notification.body|raw }}
+        </div>
+
+        {% if notification.data is defined and notification.data is not empty %}
+            {% if notification.type == 'dlv_cre' %}
+                {# Section spéciale pour les informations clés de livraison #}
+                <div style="margin: 20px 0; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    {% if notification.data['Numéro de suivi'] is defined or notification.data['Numéro'] is defined %}
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <span style="font-size: 14px; color: #64748b;">NUMÉRO DE SUIVI</span><br>
+                            <span style="font-size: 20px; font-weight: bold; color: #4f46e5;">
+                                {{ notification.data['Numéro de suivi'] ?? notification.data['Numéro'] }}
+                            </span>
+                        </div>
+                    {% endif %}
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        {% if notification.data['Date prévue'] is defined or notification.data['Date'] is defined %}
+                            <div style="text-align: center; flex: 1;">
+                                <span style="font-size: 14px; color: #64748b;">DATE DE LIVRAISON</span><br>
+                                <span style="font-weight: bold;">
+                                    {{ notification.data['Date prévue'] ?? notification.data['Date'] }}
+                                </span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if notification.data['Type'] is defined %}
+                            <div style="text-align: center; flex: 1;">
+                                <span style="font-size: 14px; color: #64748b;">TYPE</span><br>
+                                <span style="font-weight: bold;">
+                                    {{ notification.data['Type'] }}
+                                </span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if notification.data['Statut'] is defined %}
+                            <div style="text-align: center; flex: 1;">
+                                <span style="font-size: 14px; color: #64748b;">STATUT</span><br>
+                                <span style="font-weight: bold;">
+                                    {{ notification.data['Statut'] }}
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {# Adresses #}
+                <div class="notification-info" style="margin-top: 20px;">
+                    {% if notification.data['Adresse de ramassage'] is defined %}
+                        <p>
+                            <strong style="color: #64748b;">Adresse de ramassage :</strong><br>
+                            {{ notification.data['Adresse de ramassage'] }}
+                        </p>
+                    {% endif %}
+                    
+                    {% if notification.data['Adresse de livraison'] is defined or notification.data['Adresse'] is defined %}
+                        <p>
+                            <strong style="color: #64748b;">Adresse de livraison :</strong><br>
+                            {{ notification.data['Adresse de livraison'] ?? notification.data['Adresse'] }}
+                        </p>
+                    {% endif %}
+                    
+                    {% if notification.data['Description'] is defined %}
+                        <p>
+                            <strong style="color: #64748b;">Description :</strong><br>
+                            {{ notification.data['Description'] }}
+                        </p>
+                    {% endif %}
+                    
+                    {% if notification.data['Informations supplémentaires'] is defined or notification.data['Informations'] is defined %}
+                        <p>
+                            <strong style="color: #64748b;">Informations supplémentaires :</strong><br>
+                            {{ notification.data['Informations supplémentaires'] ?? notification.data['Informations'] }}
+                        </p>
+                    {% endif %}
+                </div>
+            {% else %}
+                {# Affichage standard pour les autres types de notifications #}
+                <div class="notification-info">
+                    <p><strong>Informations complémentaires :</strong></p>
+                    <ul>
+                        {% for key, value in notification.data %}
+                            {% if key != 'action_url' and key != 'action_text' %}
+                                <li>{{ key }} : <strong>{{ value }}</strong></li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        {% if notification.data.action_url is defined and notification.data.action_url is not empty %}
+            <p>
+                <a href="{{ notification.data.action_url }}" class="button">{{ notification.data.action_text ?? 'Voir les détails' }}</a>
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        <p>Si vous avez des questions, merci de nous contacter à <a href="mailto:info@tinda.cd">info@tinda.cd</a>.</p>
+        <p>© {{ "now"|date("Y") }} TINDA. Tous droits réservés.</p>
+    </div>
+</body>
+</html>

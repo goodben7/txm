@@ -19,6 +19,63 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+            
+    App\Service\NotificationService:
+        arguments:
+            $em: '@doctrine.orm.entity_manager'
+            $senders: !tagged_iterator 'app.notification_sender'
+
+    App\Service\WhatsappNotificationSender:
+        arguments:
+            $whatsappApiKey: '%env(WHATSAPP_API_KEY)%'
+            $whatsappInstanceId: '%env(WHATSAPP_INSTANCE_ID)%'
+        tags: [ 'app.notification_sender' ]
+    
+    App\Service\EmailNotificationSender:
+        arguments:  
+            $mailerSender: '%env(MAILER_SENDER)%'
+            $mailerSenderName: '%env(MAILER_SENDER_NAME)%'
+        tags: [ 'app.notification_sender' ]
+        
+    App\EventSubscriber\DeliveryCreationNotifier:
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $adminPhone: '%env(ADMIN_PHONE)%'
+    
+    App\EventSubscriber\DeliveryValidationNotifier:
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $adminPhone: '%env(ADMIN_PHONE)%'
+
+    App\EventSubscriber\DeliveryPickupNotifier:
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $adminPhone: '%env(ADMIN_PHONE)%'
+
+    App\EventSubscriber\DeliveryInProgressNotifier:
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $adminPhone: '%env(ADMIN_PHONE)%'
+
+    App\EventSubscriber\DeliveryTerminationNotifier:
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $adminPhone: '%env(ADMIN_PHONE)%'
+
+    App\EventSubscriber\DeliveryDelayNotifier:
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $adminPhone: '%env(ADMIN_PHONE)%'
+
+    App\EventSubscriber\DeliveryCancellationNotifier:
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $adminPhone: '%env(ADMIN_PHONE)%'
+
+    App\EventSubscriber\DeliveryReassignmentNotifier :
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $adminPhone: '%env(ADMIN_PHONE)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
