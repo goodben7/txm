@@ -53,7 +53,7 @@ class CustomerManager
         $profile = $this->profileRepository->findOneBy(['personType' => UserProxyIntertace::PERSON_SENDER]);
 
         if (null === $profile) {
-            throw new UnavailableDataException('cannot find profile');
+            throw new UnavailableDataException('cannot find profile with person type: sender');
         }
 
         $user = $this->bus->dispatch(
@@ -62,7 +62,8 @@ class CustomerManager
                 $customer->getEmail(),
                 $profile,
                 $customer->getPhone(),
-                $customer->getFullname()
+                $customer->getFullname(),
+                $customer->getId(),
             )
         );
 

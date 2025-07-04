@@ -33,6 +33,7 @@ class UserManager
         $user->setDisplayName($model->displayName);
         $user->setProfile($model->profile);
         $user->setPersonType($model->profile->getPersonType());
+        $user->setHolderId($model->holderId);
 
 
         $this->em->persist($user);
