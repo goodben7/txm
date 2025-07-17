@@ -60,7 +60,7 @@ class ActivityEventDispatcher
         
         if ($this->security->getUser())
             $this->bus->dispatch(new UserActivityLoggedMessage( 
-                $this->security->getUser()->getUserIdentifier(),
+                $user->getId(),
                 new \DateTimeImmutable(),
                 $action,
                 null === $ressource ? $ressourceClass : get_class($ressource),
