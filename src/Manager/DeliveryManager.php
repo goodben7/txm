@@ -258,7 +258,7 @@ class DeliveryManager
     public function delay(Delivery $delivery, \DateTimeImmutable $delayedAt, string $message) : Delivery
     {
 
-        if ( !in_array($delivery->getStatus(), [Delivery::STATUS_VALIDATED, Delivery::STATUS_PICKUPED, Delivery::STATUS_INPROGRESS])){
+        if ( !in_array($delivery->getStatus(), [Delivery::STATUS_VALIDATED, Delivery::STATUS_PICKUPED, Delivery::STATUS_INPROGRESS, Delivery::STATUS_PENDING])){
             throw new InvalidActionInputException('Action not allowed : invalid delivery state'); 
         }
 
