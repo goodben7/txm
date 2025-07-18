@@ -40,6 +40,7 @@ class DeliveryPersonManager
         $deliveryPerson->setDateOfBirth($model->dateOfBirth);
         $deliveryPerson->setCity($model->city);
         $deliveryPerson->setStartDate($model->startDate);
+        $deliveryPerson->setEndDate($model->endDate);
         $deliveryPerson->setCreatedAt(new \DateTimeImmutable());
     
 

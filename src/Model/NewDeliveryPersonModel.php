@@ -36,6 +36,7 @@ class NewDeliveryPersonModel
         public ?string $city = null,
 
         public ?DateTimeImmutable $startDate = null,
+        public ?DateTimeImmutable $endDate = null,
     ) {
     }
 }
