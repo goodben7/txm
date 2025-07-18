@@ -112,7 +112,7 @@ class DeliveryPerson implements RessourceInterface
     private ?string $vehicleLicensePlate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['delivery_person:get'])]
+    #[Groups(['delivery_person:get', 'delivery:get'])]
     private ?string $identificationNumber = null;
 
     #[ORM\Column(length: 255, nullable: true)]
