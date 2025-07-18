@@ -151,6 +151,14 @@ class DeliveryPerson implements RessourceInterface
     #[Groups(['delivery_person:get'])]
     private ?string $userId = null;
 
+    #[ORM\Column(nullable: true)]
+    #[Groups(['delivery_person:get', 'delivery_person:patch'])]
+    private ?\DateTimeImmutable $startDate = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['delivery_person:get', 'delivery_person:patch'])]
+    private ?\DateTimeImmutable $endDate = null;
+
     public function getId(): ?string
     {
         return $this->id;
@@ -356,6 +364,30 @@ class DeliveryPerson implements RessourceInterface
     public function setUserId(string $userId): static
     {
         $this->userId = $userId;
+
+        return $this;
+    }
+
+    public function getStartDate(): ?\DateTimeImmutable
+    {
+        return $this->startDate;
+    }
+
+    public function setStartDate(?\DateTimeImmutable $startDate): static
+    {
+        $this->startDate = $startDate;
+
+        return $this;
+    }
+
+    public function getEndDate(): ?\DateTimeImmutable
+    {
+        return $this->endDate;
+    }
+
+    public function setEndDate(?\DateTimeImmutable $endDate): static
+    {
+        $this->endDate = $endDate;
 
         return $this;
     }

@@ -31,7 +31,8 @@ class CreateDeliveryPersonProcessor implements ProcessorInterface
             $data->country,
             $data->address,
             $data->dateOfBirth,
-            $data->city
+            $data->city,
+            $data->startDate
         );
  
         return $this->manager->createDeliveryPerson($model); 
