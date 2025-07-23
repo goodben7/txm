@@ -181,61 +181,6 @@ class DeliveryDelayNotifier implements EventSubscriberInterface {
                 $this->messageBus->dispatch(new SendNotificationMessage($recipientEmailNotification));
             }
             
-            // Envoyer un email à l'administrateur
-            $adminEmailNotification = new Notification();
-            $adminEmailNotification->setType(NotificationType::DELIVERY_DELAYED);
-            $adminEmailNotification->setSubject('[ADMIN] Livraison retardée');
-            $adminEmailNotification->setTitle('Livraison retardée');
-            $adminEmailNotification->setBody("Une livraison a été retardée. Veuillez consulter les détails ci-dessous.");
-            $adminEmailNotification->setSentVia(Notification::SENT_VIA_GMAIL);
-            $adminEmailNotification->setTarget($this->adminEmail);
-            $adminEmailNotification->setTargetType(Notification::TARGET_TYPE_EMAIL);
-            
-            // Données complètes pour l'administrateur
-            $adminEmailNotification->setData([
-                'Numéro de suivi' => $delivery->getTrackingNumber(),
-                'Nouvelle date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                'Statut' => $statusText,
-                'Raison du retard' => $delayMessage,
-                'Livreur assigné' => $deliveryPersonText,
-                'Contact du livreur' => $deliveryPersonPhoneText,
-                'Description' => $delivery->getDescription() ?: 'Aucune description',
-                'Adresse de ramassage' => $pickupAddressText,
-                'Adresse de livraison' => $deliveryAddressText,
-                'Client' => $delivery->getCustomer() ? $delivery->getCustomer()->getFullname() . ' (' . $delivery->getCustomer()->getEmail() . ')' : 'Non spécifié',
-                'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . $delivery->getRecipient()->getEmail() . ')' : 'Non spécifié',
-                'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
-            ]);
-            
-            $this->entityManager->persist($adminEmailNotification);
-            $this->messageBus->dispatch(new SendNotificationMessage($adminEmailNotification));
-            
-            // Envoyer un message WhatsApp à l'administrateur
-            $adminWhatsappNotification = new Notification();
-            $adminWhatsappNotification->setType(NotificationType::DELIVERY_DELAYED);
-            $adminWhatsappNotification->setSubject('[ADMIN] Livraison retardée');
-            $adminWhatsappNotification->setTitle('Livraison retardée');
-            $adminWhatsappNotification->setBody('Une livraison a été retardée.');
-            $adminWhatsappNotification->setSentVia(Notification::SENT_VIA_WHATSAPP);
-            $adminWhatsappNotification->setTarget($this->adminPhone);
-            $adminWhatsappNotification->setTargetType(Notification::TARGET_TYPE_WHATSAPP);
-            
-            // Données résumées pour WhatsApp
-            $adminWhatsappNotification->setData([
-                'Numéro' => $delivery->getTrackingNumber(),
-                'Nouvelle date' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                'Raison' => substr($delayMessage, 0, 100) . (strlen($delayMessage) > 100 ? '...' : ''),
-                'Livreur' => $deliveryPersonText,
-                'Client' => $delivery->getCustomer() ? $delivery->getCustomer()->getFullname() : 'Non spécifié',
-                'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() : 'Non spécifié',
-                'Statut' => $statusText
-            ]);
-            
-            $this->entityManager->persist($adminWhatsappNotification);
-            $this->messageBus->dispatch(new SendNotificationMessage($adminWhatsappNotification));
-            
             // Envoyer un email au livreur si disponible
             if ($delivery->getDeliveryPerson() && $delivery->getDeliveryPerson()->getEmail()) {
                 $deliveryPersonEmailNotification = new Notification();
@@ -257,7 +202,7 @@ class DeliveryDelayNotifier implements EventSubscriberInterface {
                     'Description' => $delivery->getDescription() ?: 'Aucune description',
                     'Adresse de ramassage' => $pickupAddressText,
                     'Adresse de livraison' => $deliveryAddressText,
-                    'Client' => $delivery->getCustomer() ? $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                    'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
                     'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
                     'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
                 ]);
@@ -283,7 +228,7 @@ class DeliveryDelayNotifier implements EventSubscriberInterface {
                     'Nouvelle date' => $delivery->getDeliveryDate()->format('d/m/Y'),
                     'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
                     'Raison' => substr($delayMessage, 0, 100) . (strlen($delayMessage) > 100 ? '...' : ''),
-                    'Client' => $delivery->getCustomer() ? $delivery->getCustomer()->getFullname() : 'Non spécifié',
+                    'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
                     'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() : 'Non spécifié',
                     'Adresse de ramassage' => substr($pickupAddressText, 0, 50) . (strlen($pickupAddressText) > 50 ? '...' : ''),
                     'Adresse de livraison' => substr($deliveryAddressText, 0, 50) . (strlen($deliveryAddressText) > 50 ? '...' : '')

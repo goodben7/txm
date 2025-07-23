@@ -181,61 +181,6 @@ class DeliveryReassignmentNotifier implements EventSubscriberInterface {
                 $this->messageBus->dispatch(new SendNotificationMessage($recipientEmailNotification));
             }
             
-            // Envoyer un email à l'administrateur
-            $adminEmailNotification = new Notification();
-            $adminEmailNotification->setType(NotificationType::DELIVERY_ASSIGNED);
-            $adminEmailNotification->setSubject('[ADMIN] Livraison réassignée');
-            $adminEmailNotification->setTitle('Livraison réassignée');
-            $adminEmailNotification->setBody("Une livraison a été réassignée à un nouveau livreur. Veuillez consulter les détails ci-dessous.");
-            $adminEmailNotification->setSentVia(Notification::SENT_VIA_GMAIL);
-            $adminEmailNotification->setTarget($this->adminEmail);
-            $adminEmailNotification->setTargetType(Notification::TARGET_TYPE_EMAIL);
-            
-            // Données complètes pour l'administrateur
-            $adminEmailNotification->setData([
-                'Numéro de suivi' => $delivery->getTrackingNumber(),
-                'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                'Statut' => $statusText,
-                'Nouveau livreur assigné' => $deliveryPersonText,
-                'Contact du livreur' => $deliveryPersonPhoneText,
-                'Raison du changement' => $reassignmentMessage,
-                'Description' => $delivery->getDescription() ?: 'Aucune description',
-                'Adresse de ramassage' => $pickupAddressText,
-                'Adresse de livraison' => $deliveryAddressText,
-                'Client' => $delivery->getCustomer() ? $delivery->getCustomer()->getFullname() . ' (' . $delivery->getCustomer()->getEmail() . ')' : 'Non spécifié',
-                'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . $delivery->getRecipient()->getEmail() . ')' : 'Non spécifié',
-                'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
-            ]);
-            
-            $this->entityManager->persist($adminEmailNotification);
-            $this->messageBus->dispatch(new SendNotificationMessage($adminEmailNotification));
-            
-            // Envoyer un message WhatsApp à l'administrateur
-            $adminWhatsappNotification = new Notification();
-            $adminWhatsappNotification->setType(NotificationType::DELIVERY_ASSIGNED);
-            $adminWhatsappNotification->setSubject('[ADMIN] Livraison réassignée');
-            $adminWhatsappNotification->setTitle('Livraison réassignée');
-            $adminWhatsappNotification->setBody('Une livraison a été réassignée à un nouveau livreur.');
-            $adminWhatsappNotification->setSentVia(Notification::SENT_VIA_WHATSAPP);
-            $adminWhatsappNotification->setTarget($this->adminPhone);
-            $adminWhatsappNotification->setTargetType(Notification::TARGET_TYPE_WHATSAPP);
-            
-            // Données résumées pour WhatsApp
-            $adminWhatsappNotification->setData([
-                'Numéro' => $delivery->getTrackingNumber(),
-                'Date' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                'Raison' => substr($reassignmentMessage, 0, 100) . (strlen($reassignmentMessage) > 100 ? '...' : ''),
-                'Nouveau livreur' => $deliveryPersonText,
-                'Client' => $delivery->getCustomer() ? $delivery->getCustomer()->getFullname() : 'Non spécifié',
-                'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() : 'Non spécifié',
-                'Statut' => $statusText
-            ]);
-            
-            $this->entityManager->persist($adminWhatsappNotification);
-            $this->messageBus->dispatch(new SendNotificationMessage($adminWhatsappNotification));
-            
             // Envoyer un email au nouveau livreur si disponible
             if ($delivery->getDeliveryPerson() && $delivery->getDeliveryPerson()->getEmail()) {
                 $deliveryPersonEmailNotification = new Notification();
@@ -257,7 +202,7 @@ class DeliveryReassignmentNotifier implements EventSubscriberInterface {
                     'Description' => $delivery->getDescription() ?: 'Aucune description',
                     'Adresse de ramassage' => $pickupAddressText,
                     'Adresse de livraison' => $deliveryAddressText,
-                    'Client' => $delivery->getCustomer() ? $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                    'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
                     'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
                     'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
                 ]);
@@ -283,7 +228,7 @@ class DeliveryReassignmentNotifier implements EventSubscriberInterface {
                     'Date' => $delivery->getDeliveryDate()->format('d/m/Y'),
                     'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
                     'Raison' => substr($reassignmentMessage, 0, 100) . (strlen($reassignmentMessage) > 100 ? '...' : ''),
-                    'Client' => $delivery->getCustomer() ? $delivery->getCustomer()->getFullname() : 'Non spécifié',
+                    'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
                     'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() : 'Non spécifié',
                     'Adresse de ramassage' => substr($pickupAddressText, 0, 50) . (strlen($pickupAddressText) > 50 ? '...' : ''),
                     'Adresse de livraison' => substr($deliveryAddressText, 0, 50) . (strlen($deliveryAddressText) > 50 ? '...' : '')
