@@ -11,6 +11,7 @@ use App\Dto\SetUserProfileDto;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 use Doctrine\ORM\Mapping as ORM;
+use App\Model\RessourceInterface;
 use App\Model\UserProxyIntertace;
 use App\Manager\PermissionManager;
 use App\Repository\UserRepository;
@@ -21,7 +22,9 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\State\ToggleLockUserProcessor;
 use ApiPlatform\Metadata\GetCollection;
+use App\Dto\NewRegisterUserCustomerDto;
 use App\State\ChangeUserPasswordProcessor;
+use App\State\RegisterUserCustomerProcessor;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
@@ -29,7 +32,6 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
-use App\Model\RessourceInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
@@ -83,6 +85,11 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
             input: SetUserProfileDto::class,
             processor: SetProfileProcessor::class,
             status: 200,
+        ),
+        new Post(
+            uriTemplate: "users/customers/registers",
+            input: NewRegisterUserCustomerDto::class,
+            processor: RegisterUserCustomerProcessor::class,
         ),
     ]
 )]
