@@ -86,9 +86,8 @@ class DeliveryPickupNotifier implements EventSubscriberInterface {
                     'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
                     'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
                     'Statut' => $statusText,
-                    'Livreur assigné' => $deliveryPersonText,
-                    'Contact du livreur' => $deliveryPersonPhoneText,
                     'Description' => $delivery->getDescription() ?: 'Aucune description',
+                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
                     'Adresse de ramassage' => $pickupAddressText,
                     'Adresse de livraison' => $deliveryAddressText,
                     'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
@@ -109,11 +108,15 @@ class DeliveryPickupNotifier implements EventSubscriberInterface {
                 $customerWhatsappNotification->setTarget($delivery->getCustomer()->getPhone());
                 $customerWhatsappNotification->setTargetType(Notification::TARGET_TYPE_WHATSAPP);
                 $customerWhatsappNotification->setData([
-                    'Numéro' => $delivery->getTrackingNumber(),
-                    'Date' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                    'Livreur' => $deliveryPersonText,
-                    'Contact' => $deliveryPersonPhoneText,
-                    'Statut' => $statusText
+                    'Numéro de suivi' => $delivery->getTrackingNumber(),
+                    'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
+                    'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
+                    'Statut' => $statusText,
+                    'Description' => $delivery->getDescription() ?: 'Aucune description',
+                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                    'Adresse de ramassage' => $pickupAddressText,
+                    'Adresse de livraison' => $deliveryAddressText,
+                    'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
                 ]);
                 $this->entityManager->persist($customerWhatsappNotification);
                 $this->messageBus->dispatch(new SendNotificationMessage($customerWhatsappNotification));

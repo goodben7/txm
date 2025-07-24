@@ -70,24 +70,24 @@ class DeliveryTerminationNotifier implements EventSubscriberInterface {
             
             // Obtenir le statut en format lisible
             $statusText = $this->getStatusText($delivery->getStatus());
+
+            $type = $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier';
             
             // Obtenir les informations du livreur
             $deliveryPersonText = $delivery->getDeliveryPerson() ? $delivery->getDeliveryPerson()->getFullname() : 'Non assigné';
             $deliveryPersonPhoneText = $delivery->getDeliveryPerson() && $delivery->getDeliveryPerson()->getPhone() ? $delivery->getDeliveryPerson()->getPhone() : 'Non disponible';
             
             // Mettre un message simple dans le corps
-            $emailNotification->setBody("Votre livraison a été livrée avec succès à sa destination. Veuillez consulter les détails ci-dessous.");
+            $emailNotification->setBody("Votre {$type} a été livré avec succès à sa destination. Veuillez consulter les détails ci-dessous.");
             $emailNotification->setSentVia(Notification::SENT_VIA_GMAIL);
             
             // Placer toutes les informations détaillées dans data
             $emailNotification->setData([
                 'Numéro de suivi' => $delivery->getTrackingNumber(),
                 'Date de livraison' => $delivery->getTerminedAt() ? $delivery->getTerminedAt()->format('d/m/Y H:i') : $delivery->getDeliveryDate()->format('d/m/Y'),
-                'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
                 'Statut' => $statusText,
-                'Livreur assigné' => $deliveryPersonText,
-                'Contact du livreur' => $deliveryPersonPhoneText,
                 'Description' => $delivery->getDescription() ?: 'Aucune description',
+                'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
                 'Adresse de ramassage' => $pickupAddressText,
                 'Adresse de livraison' => $deliveryAddressText,
                 'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
@@ -108,16 +108,19 @@ class DeliveryTerminationNotifier implements EventSubscriberInterface {
                 $customerWhatsappNotification->setType(NotificationType::DELIVERY_COMPLETED);
                 $customerWhatsappNotification->setSubject('Livraison terminée');
                 $customerWhatsappNotification->setTitle('Livraison terminée');
-                $customerWhatsappNotification->setBody('Votre livraison a été livrée avec succès à sa destination.');
+                $customerWhatsappNotification->setBody("Votre {$type} a été livré avec succès à sa destination. Veuillez consulter les détails ci-dessous.");
                 $customerWhatsappNotification->setSentVia(Notification::SENT_VIA_WHATSAPP);
                 $customerWhatsappNotification->setTarget($delivery->getCustomer()->getPhone());
                 $customerWhatsappNotification->setTargetType(Notification::TARGET_TYPE_WHATSAPP);
                 $customerWhatsappNotification->setData([
-                    'Numéro' => $delivery->getTrackingNumber(),
-                    'Date' => $delivery->getTerminedAt() ? $delivery->getTerminedAt()->format('d/m/Y H:i') : $delivery->getDeliveryDate()->format('d/m/Y'),
-                    'Livreur' => $deliveryPersonText,
-                    'Contact' => $deliveryPersonPhoneText,
-                    'Statut' => $statusText
+                    'Numéro de suivi' => $delivery->getTrackingNumber(),
+                    'Date de livraison' => $delivery->getTerminedAt() ? $delivery->getTerminedAt()->format('d/m/Y H:i') : $delivery->getDeliveryDate()->format('d/m/Y'),
+                    'Statut' => $statusText,
+                    'Description' => $delivery->getDescription() ?: 'Aucune description',
+                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                    'Adresse de ramassage' => $pickupAddressText,
+                    'Adresse de livraison' => $deliveryAddressText,
+                    'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
                 ]);
                 $this->entityManager->persist($customerWhatsappNotification);
                 $this->messageBus->dispatch(new SendNotificationMessage($customerWhatsappNotification));
@@ -128,16 +131,19 @@ class DeliveryTerminationNotifier implements EventSubscriberInterface {
             $recipientWhatsappNotification->setType(NotificationType::DELIVERY_COMPLETED);
             $recipientWhatsappNotification->setSubject('Livraison terminée');
             $recipientWhatsappNotification->setTitle('Livraison terminée');
-            $contactInfo = $delivery->getCustomer() && $delivery->getCustomer()->getCompanyName() ? " Pour plus d'informations sur le produit qui vous a été livré, veuillez contacter le marchand {$delivery->getCustomer()->getCompanyName()}." : "";
-            $recipientWhatsappNotification->setBody("Bonjour, votre livraison a été livrée avec succès à votre adresse.{$contactInfo}");
+            $contactInfo = ($delivery->getType() === Delivery::TYPE_PACKAGE && $delivery->getCustomer() && $delivery->getCustomer()->getCompanyName()) ? " Pour plus d'informations sur le produit qui vous a été livré, veuillez contacter le marchand {$delivery->getCustomer()->getCompanyName()}." : "";
+            $recipientWhatsappNotification->setBody("Bonjour, votre {$type} a été livré avec succès à votre adresse. Veuillez consulter les détails ci-dessous.{$contactInfo}");
             $recipientWhatsappNotification->setSentVia(Notification::SENT_VIA_WHATSAPP);
             $recipientWhatsappNotification->setData([
-                'Numéro' => $delivery->getTrackingNumber(),
-                'Date' => $delivery->getTerminedAt() ? $delivery->getTerminedAt()->format('d/m/Y H:i') : $delivery->getDeliveryDate()->format('d/m/Y'),
-                'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                'Livreur' => $deliveryPersonText,
-                'Contact' => $deliveryPersonPhoneText,
-                'Adresse de livraison' => $delivery->getDeliveryAddress() ? substr($delivery->getDeliveryAddress()->getAddress(), 0, 50) . (strlen($delivery->getDeliveryAddress()->getAddress()) > 50 ? '...' : '') : 'Non spécifiée'
+                'Numéro de suivi' => $delivery->getTrackingNumber(),
+                'Date de livraison' => $delivery->getTerminedAt() ? $delivery->getTerminedAt()->format('d/m/Y H:i') : $delivery->getDeliveryDate()->format('d/m/Y'),
+                'Statut' => $this->getStatusText($delivery->getStatus()),
+                'Livreur assigné' => $deliveryPersonText,
+                'Contact du livreur' => $deliveryPersonPhoneText,
+                'Description' => $delivery->getDescription() ?: 'Aucune description',
+                'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                'Adresse de livraison' => $delivery->getDeliveryAddress() ? $delivery->getDeliveryAddress()->getAddress() : 'Non spécifiée',
+                'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
             ]);
             
             // Envoyer au numéro de téléphone du destinataire si disponible
@@ -154,17 +160,17 @@ class DeliveryTerminationNotifier implements EventSubscriberInterface {
                 $recipientEmailNotification->setType(NotificationType::DELIVERY_COMPLETED);
                 $recipientEmailNotification->setSubject('Livraison terminée');
                 $recipientEmailNotification->setTitle('Livraison terminée');
-                $contactInfo = $delivery->getCustomer() && $delivery->getCustomer()->getCompanyName() ? " Pour plus d'informations sur le produit qui vous a été livré, veuillez contacter le marchand {$delivery->getCustomer()->getCompanyName()}." : "";
-                $recipientEmailNotification->setBody("Bonjour, votre livraison a été livrée avec succès à votre adresse. Veuillez consulter les détails ci-dessous.{$contactInfo}");
+                $contactInfo = ($delivery->getType() === Delivery::TYPE_PACKAGE && $delivery->getCustomer() && $delivery->getCustomer()->getCompanyName()) ? " Pour plus d'informations sur le produit qui vous a été livré, veuillez contacter le marchand {$delivery->getCustomer()->getCompanyName()}." : "";
+                $recipientEmailNotification->setBody("Bonjour, votre {$type} a été livrée avec succès à votre adresse. Veuillez consulter les détails ci-dessous.{$contactInfo}");
 
                 $recipientEmailNotification->setData([
                     'Numéro de suivi' => $delivery->getTrackingNumber(),
                     'Date de livraison' => $delivery->getTerminedAt() ? $delivery->getTerminedAt()->format('d/m/Y H:i') : $delivery->getDeliveryDate()->format('d/m/Y'),
-                    'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
                     'Statut' => $this->getStatusText($delivery->getStatus()),
                     'Livreur assigné' => $deliveryPersonText,
                     'Contact du livreur' => $deliveryPersonPhoneText,
                     'Description' => $delivery->getDescription() ?: 'Aucune description',
+                    'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
                     'Adresse de livraison' => $delivery->getDeliveryAddress() ? $delivery->getDeliveryAddress()->getAddress() : 'Non spécifiée',
                     'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
                 ]);

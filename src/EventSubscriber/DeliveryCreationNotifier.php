@@ -58,12 +58,6 @@ class DeliveryCreationNotifier implements EventSubscriberInterface {
         }
 
         try {
-            // Créer une notification email
-            $emailNotification = new Notification();
-            $emailNotification->setType(NotificationType::DELIVERY_CREATED);
-            $emailNotification->setSubject('Nouvelle livraison créée');
-            $emailNotification->setTitle('Nouvelle livraison');
-            
             // Préparer les informations d'adresse
             $pickupAddressText = $delivery->getPickupAddress() ? $delivery->getPickupAddress()->getAddress() : 'Non spécifiée';
             $deliveryAddressText = $delivery->getDeliveryAddress() ? $delivery->getDeliveryAddress()->getAddress() : 'Non spécifiée';
@@ -71,28 +65,31 @@ class DeliveryCreationNotifier implements EventSubscriberInterface {
             // Obtenir le statut en format lisible
             $statusText = $this->getStatusText($delivery->getStatus());
             
-            // Mettre un message simple dans le corps
-            $emailNotification->setBody("Une nouvelle livraison a été créée. Veuillez consulter les détails ci-dessous.");
-            $emailNotification->setSentVia(Notification::SENT_VIA_GMAIL);
-            
-            // Placer toutes les informations détaillées dans data
-            $emailNotification->setData([
-                'Numéro de suivi' => $delivery->getTrackingNumber(),
-                'Date de création' => $delivery->getCreatedAt()->format('d/m/Y H:i'),
-                'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                'Statut' => $statusText,
-                'Description' => $delivery->getDescription() ?: 'Aucune description',
-                'Adresse de ramassage' => $pickupAddressText,
-                'Adresse de livraison' => $deliveryAddressText,
-                'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
-            ]);
-            
             // Envoyer un email au client si disponible
             if ($delivery->getCustomer() && $delivery->getCustomer()->getEmail()) {
-                $customerEmailNotification = clone $emailNotification;
+                $customerEmailNotification = new Notification();
+                $customerEmailNotification->setType(NotificationType::DELIVERY_CREATED);
+                $customerEmailNotification->setSubject('Nouvelle livraison créée');
+                $customerEmailNotification->setTitle('Nouvelle livraison créée');
+                $customerEmailNotification->setBody("Votre livraison a été créée avec succès. Veuillez consulter les détails ci-dessous.");
+                $customerEmailNotification->setSentVia(Notification::SENT_VIA_GMAIL);
                 $customerEmailNotification->setTarget($delivery->getCustomer()->getEmail());
                 $customerEmailNotification->setTargetType(Notification::TARGET_TYPE_EMAIL);
+                
+                // Placer toutes les informations détaillées dans data
+                $customerEmailNotification->setData([
+                    'Numéro de suivi' => $delivery->getTrackingNumber(),
+                    'Creé le' => $delivery->getCreatedAt()->format('d/m/Y à H:i:s'),
+                    'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
+                    'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
+                    'Statut' => $statusText,
+                    'Description' => $delivery->getDescription() ?: 'Aucune description',
+                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                    'Adresse de ramassage' => $pickupAddressText,
+                    'Adresse de livraison' => $deliveryAddressText,
+                    'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
+                ]);
+                
                 $this->entityManager->persist($customerEmailNotification);
                 $this->messageBus->dispatch(new SendNotificationMessage($customerEmailNotification));
             }
@@ -101,24 +98,29 @@ class DeliveryCreationNotifier implements EventSubscriberInterface {
             if ($delivery->getCustomer() && $delivery->getCustomer()->getPhone()) {
                 $customerWhatsappNotification = new Notification();
                 $customerWhatsappNotification->setType(NotificationType::DELIVERY_CREATED);
-                $customerWhatsappNotification->setSubject('Nouvelle livraison');
-                $customerWhatsappNotification->setTitle('Nouvelle livraison');
-                $customerWhatsappNotification->setBody('Nouvelle livraison créée. Veuillez consulter les détails ci-dessous.');
+                $customerWhatsappNotification->setSubject('Nouvelle livraison créée');
+                $customerWhatsappNotification->setTitle('Nouvelle livraison créée');
+                $customerWhatsappNotification->setBody('Votre livraison a été créée avec succès.');
                 $customerWhatsappNotification->setSentVia(Notification::SENT_VIA_WHATSAPP);
                 $customerWhatsappNotification->setTarget($delivery->getCustomer()->getPhone());
                 $customerWhatsappNotification->setTargetType(Notification::TARGET_TYPE_WHATSAPP);
                 $customerWhatsappNotification->setData([
-                    'Numéro' => $delivery->getTrackingNumber(),
-                    'Créée le' => $delivery->getCreatedAt()->format('d/m/Y H:i'),
-                    'Date' => $delivery->getDeliveryDate()->format('d/m/Y'),
+                    'Numéro de suivi' => $delivery->getTrackingNumber(),
+                    'Creé le' => $delivery->getCreatedAt()->format('d/m/Y à H:i:s'),
+                    'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
                     'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                    'Adresse' => $delivery->getDeliveryAddress() ? substr($delivery->getDeliveryAddress()->getAddress(), 0, 50) . '...' : 'Non spécifiée',
-                    'Informations' => $delivery->getAdditionalInformation() ?: 'Aucune'
+                    'Statut' => $statusText,
+                    'Description' => $delivery->getDescription() ?: 'Aucune description',
+                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                    'Adresse de ramassage' => $pickupAddressText,
+                    'Adresse de livraison' => $deliveryAddressText,
+                    'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
                 ]);
                 $this->entityManager->persist($customerWhatsappNotification);
                 $this->messageBus->dispatch(new SendNotificationMessage($customerWhatsappNotification));
             }
             
+            // Enregistrer toutes les notifications en base de données
             $this->entityManager->flush();
         }
         catch (\Exception $e) {

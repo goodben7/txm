@@ -24,7 +24,7 @@ readonly class EmailNotificationSender implements NotificationSenderInterface
             ->to(new Address(($notification->getTarget())))
             ->subject($notification->getSubject());
         
-        // Utiliser un template spécifique pour les notifications de création de compte
+        // Utiliser un template spécifique selon le type de notification
         if ($notification->getType() === \App\Enum\NotificationType::NEW_ACCOUNT_CREATED) {
             $email->htmlTemplate('email/new_user_details.html.twig')
                 ->context([
@@ -35,6 +35,10 @@ readonly class EmailNotificationSender implements NotificationSenderInterface
                         'createdAt' => new \DateTimeImmutable($notification->getData()['Date d\'inscription'] ?? 'now')
                     ]
                 ]);
+        } elseif ($notification->getType() === \App\Enum\NotificationType::DELIVERY_CREATED) {
+            // Template spécifique pour les notifications de création de livraison
+            $email->htmlTemplate('email/delivery_creation.html.twig')
+                ->context(['notification' => $notification]);
         } else {
             $email->htmlTemplate('email/notification_generic.html.twig')
                 ->context(['notification' => $notification]);

@@ -85,9 +85,8 @@ class DeliveryValidationNotifier implements EventSubscriberInterface {
                 'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
                 'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
                 'Statut' => $statusText,
-                'Livreur assigné' => $deliveryPersonText,
-                'Contact du livreur' => $deliveryPersonPhoneText,
                 'Description' => $delivery->getDescription() ?: 'Aucune description',
+                'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
                 'Adresse de ramassage' => $pickupAddressText,
                 'Adresse de livraison' => $deliveryAddressText,
                 'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
@@ -113,11 +112,15 @@ class DeliveryValidationNotifier implements EventSubscriberInterface {
                 $customerWhatsappNotification->setTarget($delivery->getCustomer()->getPhone());
                 $customerWhatsappNotification->setTargetType(Notification::TARGET_TYPE_WHATSAPP);
                 $customerWhatsappNotification->setData([
-                    'Numéro' => $delivery->getTrackingNumber(),
-                    'Date' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                    'Livreur' => $deliveryPersonText,
-                    'Contact' => $deliveryPersonPhoneText,
-                    'Statut' => $statusText
+                    'Numéro de suivi' => $delivery->getTrackingNumber(),
+                    'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
+                    'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
+                    'Statut' => $statusText,
+                    'Description' => $delivery->getDescription() ?: 'Aucune description',
+                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                    'Adresse de ramassage' => $pickupAddressText,
+                    'Adresse de livraison' => $deliveryAddressText,
+                    'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
                 ]);
                 $this->entityManager->persist($customerWhatsappNotification);
                 $this->messageBus->dispatch(new SendNotificationMessage($customerWhatsappNotification));
@@ -126,17 +129,19 @@ class DeliveryValidationNotifier implements EventSubscriberInterface {
             // Créer une notification WhatsApp pour le destinataire
             $recipientWhatsappNotification = new Notification();
             $recipientWhatsappNotification->setType(NotificationType::DELIVERY_ASSIGNED);
-            $recipientWhatsappNotification->setSubject('Livraison validée');
-            $recipientWhatsappNotification->setTitle('Livraison validée');
-            $recipientWhatsappNotification->setBody('Bonjour, votre livraison a été validée et un livreur a été assigné.');
+            $recipientWhatsappNotification->setSubject('Nouvelle livraison');
+            $recipientWhatsappNotification->setTitle('Nouvelle livraison');
+            $recipientWhatsappNotification->setBody('Bonjour, Une nouvelle livraison a été créée et un livreur a été assigné. Veuillez consulter les détails ci-dessous.');
             $recipientWhatsappNotification->setSentVia(Notification::SENT_VIA_WHATSAPP);
             $recipientWhatsappNotification->setData([
-                'Numéro' => $delivery->getTrackingNumber(),
-                'Date' => $delivery->getDeliveryDate()->format('d/m/Y'),
+                'Numéro de suivi' => $delivery->getTrackingNumber(),
+                'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
                 'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                'Livreur' => $deliveryPersonText,
-                'Contact' => $deliveryPersonPhoneText,
-                'Adresse de livraison' => $delivery->getDeliveryAddress() ? substr($delivery->getDeliveryAddress()->getAddress(), 0, 50) . '...' : 'Non spécifiée'
+                'Statut' => $statusText,
+                'Description' => $delivery->getDescription() ?: 'Aucune description',
+                'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                'Adresse de livraison' => $deliveryAddressText,
+                'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
             ]);
             
             // Envoyer au numéro de téléphone du destinataire si disponible
@@ -151,19 +156,18 @@ class DeliveryValidationNotifier implements EventSubscriberInterface {
             if ($delivery->getRecipient() && $delivery->getRecipient()->getEmail()) {
                 $recipientEmailNotification = new Notification();
                 $recipientEmailNotification->setType(NotificationType::DELIVERY_ASSIGNED);
-                $recipientEmailNotification->setSubject('Livraison validée et livreur assigné');
-                $recipientEmailNotification->setTitle('Livraison validée');
-                $recipientEmailNotification->setBody("Bonjour, votre livraison a été validée et un livreur a été assigné. Veuillez consulter les détails ci-dessous.");
+                $recipientEmailNotification->setSubject('Nouvelle livraison');
+                $recipientEmailNotification->setTitle('Nouvelle livraison');
+                $recipientEmailNotification->setBody("Bonjour, Une nouvelle livraison a été créée et un livreur a été assigné. Veuillez consulter les détails ci-dessous.");
 
                 $recipientEmailNotification->setData([
                     'Numéro de suivi' => $delivery->getTrackingNumber(),
                     'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
                     'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                    'Statut' => $this->getStatusText($delivery->getStatus()),
-                    'Livreur assigné' => $deliveryPersonText,
-                    'Contact du livreur' => $deliveryPersonPhoneText,
+                    'Statut' => $statusText,
                     'Description' => $delivery->getDescription() ?: 'Aucune description',
-                    'Adresse de livraison' => $delivery->getDeliveryAddress() ? $delivery->getDeliveryAddress()->getAddress() : 'Non spécifiée',
+                    'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                    'Adresse de livraison' => $deliveryAddressText,
                     'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
                 ]);
                 
@@ -172,36 +176,6 @@ class DeliveryValidationNotifier implements EventSubscriberInterface {
                 $recipientEmailNotification->setTargetType(Notification::TARGET_TYPE_EMAIL);
                 $this->entityManager->persist($recipientEmailNotification);
                 $this->messageBus->dispatch(new SendNotificationMessage($recipientEmailNotification));
-            }
-            
-            
-            // Envoyer un email au livreur si disponible
-            if ($delivery->getDeliveryPerson() && $delivery->getDeliveryPerson()->getEmail()) {
-                $deliveryPersonEmailNotification = new Notification();
-                $deliveryPersonEmailNotification->setType(NotificationType::DELIVERY_ASSIGNED);
-                $deliveryPersonEmailNotification->setSubject('Nouvelle livraison assignée');
-                $deliveryPersonEmailNotification->setTitle('Nouvelle livraison');
-                $deliveryPersonEmailNotification->setBody("Bonjour, une nouvelle livraison vous a été assignée. Veuillez consulter les détails ci-dessous.");
-                $deliveryPersonEmailNotification->setSentVia(Notification::SENT_VIA_GMAIL);
-                $deliveryPersonEmailNotification->setTarget($delivery->getDeliveryPerson()->getEmail());
-                $deliveryPersonEmailNotification->setTargetType(Notification::TARGET_TYPE_EMAIL);
-            
-                // Données complètes pour le livreur
-                $deliveryPersonEmailNotification->setData([
-                    'Numéro de suivi' => $delivery->getTrackingNumber(),
-                    'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                    'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                    'Statut' => $statusText,
-                    'Description' => $delivery->getDescription() ?: 'Aucune description',
-                    'Adresse de ramassage' => $pickupAddressText,
-                    'Adresse de livraison' => $deliveryAddressText,
-                    'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
-                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
-                    'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
-                ]);
-                
-                $this->entityManager->persist($deliveryPersonEmailNotification);
-                $this->messageBus->dispatch(new SendNotificationMessage($deliveryPersonEmailNotification));
             }
             
             // Envoyer un message WhatsApp au livreur si disponible
@@ -217,13 +191,16 @@ class DeliveryValidationNotifier implements EventSubscriberInterface {
                 
                 // Données résumées pour WhatsApp
                 $deliveryPersonWhatsappNotification->setData([
-                    'Numéro' => $delivery->getTrackingNumber(),
-                    'Date' => $delivery->getDeliveryDate()->format('d/m/Y'),
+                    'Numéro de suivi' => $delivery->getTrackingNumber(),
+                    'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
                     'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
+                    'Statut' => $statusText,
+                    'Description' => $delivery->getDescription() ?: 'Aucune description',
+                    'Adresse de ramassage' => $pickupAddressText,
+                    'Adresse de livraison' => $deliveryAddressText,
                     'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
-                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() : 'Non spécifié',
-                    'Adresse de ramassage' => substr($pickupAddressText, 0, 50) . (strlen($pickupAddressText) > 50 ? '...' : ''),
-                    'Adresse de livraison' => substr($deliveryAddressText, 0, 50) . (strlen($deliveryAddressText) > 50 ? '...' : '')
+                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                    'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
                 ]);
                 
                 $this->entityManager->persist($deliveryPersonWhatsappNotification);
