@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Entity\Profile;
 use App\Entity\Customer;
 use App\Entity\Delivery;
+use App\Entity\Document;
 use App\Model\Ressource;
 use App\Entity\Recipient;
 use App\Entity\Notification;
@@ -22,4 +23,5 @@ return static function (): iterable {
     yield Ressource::new("delivery_person", DeliveryPerson::class, "DP", true);
     yield Ressource::new("notification", Notification::class, "NF", true);
     yield Ressource::new("customer", Customer::class, "CU", true);
+    yield Ressource::new("document", Document::class, "DO", true);
 };

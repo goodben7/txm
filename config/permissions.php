@@ -75,4 +75,10 @@ return static function (): iterable {
 
     yield Permission::new('ROLE_NOTIFICATION_LIST', "Consulter la liste des notifications");
     yield Permission::new('ROLE_NOTIFICATION_DETAILS', "Consulter les détails d'une notification");
+
+    yield Permission::new('ROLE_DOC_DETAILS', "Consulter les détails d'un document");
+    yield Permission::new('ROLE_DOC_LIST', "Consulter la liste des documents");
+    yield Permission::new('ROLE_DOC_CREATE', "Créer un document");
+    yield Permission::new('ROLE_DOC_REJECT', "Refuser un document"); 
+    yield Permission::new('ROLE_DOC_VALIDATE', "Valider un document"); 
 };
