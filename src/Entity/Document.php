@@ -10,13 +10,17 @@ use ApiPlatform\Metadata\Delete;
 use App\Dto\ValidateDocumentDto;
 use Doctrine\ORM\Mapping as ORM;
 use App\Model\RessourceInterface;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\DocumentRepository;
 use App\State\RejectDocumentProcessor;
 use ApiPlatform\Metadata\GetCollection;
 use App\State\ValidateDocumentProcessor;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use Symfony\Component\HttpFoundation\File\File;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
@@ -62,6 +66,18 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
         ),
     ]
 )]
+#[ApiFilter(SearchFilter::class, properties: [
+    'id' => 'exact',
+    'holderId' => 'exact',
+    'type' => 'exact',
+    'status' => 'exact',
+    'documentRefNumber' => 'start',
+    'holder' => 'exact',
+    'validatedBy' => 'exact',
+    'rejectedBy' => 'exact'
+])]
+#[ApiFilter(OrderFilter::class, properties: ['uploadedAt', 'updatedAt', 'validatedAt', 'rejectedAt'])]
+#[ApiFilter(DateFilter::class, properties: ['uploadedAt', 'updatedAt', 'validatedAt', 'rejectedAt'])]
 class Document implements RessourceInterface
 {
     public const string ID_PREFIX = "DO";
