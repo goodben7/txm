@@ -136,7 +136,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
     #[ORM\Column]
     private ?string $password = null;
 
-    private ?string $plainPassword;
+    public ?string $plainPassword;
 
     #[ORM\Column(length: 15, nullable: true)]
     #[Groups(groups: ['user:get', 'user:patch'])]
@@ -333,8 +333,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
 
     /**
      * Get the value of plainPassword
-     */ 
-    public function getPlainPassword()
+     */
+    public function getPlainPassword(): ?string
     {
         return $this->plainPassword;
     }
@@ -343,8 +343,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
      * Set the value of plainPassword
      *
      * @return  self
-     */ 
-    public function setPlainPassword($plainPassword)
+     */
+    public function setPlainPassword(?string $plainPassword): self
     {
         $this->plainPassword = $plainPassword;
 

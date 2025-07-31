@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
 use App\Dto\RejectDocumentDto;
+use ApiPlatform\Metadata\Delete;
 use App\Dto\ValidateDocumentDto;
 use Doctrine\ORM\Mapping as ORM;
 use App\Model\RessourceInterface;
@@ -55,6 +56,9 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
             input: ValidateDocumentDto::class,
             processor: ValidateDocumentProcessor::class,
             status: 200
+        ),
+        new Delete(
+            security: 'is_granted("ROLE_DOC_DELETE")',
         ),
     ]
 )]

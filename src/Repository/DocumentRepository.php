@@ -16,6 +16,41 @@ class DocumentRepository extends ServiceEntityRepository
         parent::__construct($registry, Document::class);
     }
 
+    /**
+     * Récupère le document le plus récent attaché à un customer par son holderId
+     * 
+     * @param string $holderId L'identifiant du customer
+     * @return Document|null Returns a Document object or null if not found
+     */
+    public function findByCustomerHolderId(string $holderId): ?Document
+    {
+        return $this->createQueryBuilder('d')
+            ->andWhere('d.holderId = :holderId')
+            ->setParameter('holderId', $holderId)
+            ->orderBy('d.uploadedAt', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
+    /**
+     * Récupère tous les documents attachés à un customer par son holderId
+     * 
+     * @param string $holderId L'identifiant du customer
+     * @return Document[] Returns an array of Document objects
+     */
+    public function findAllByCustomerHolderId(string $holderId): array
+    {
+        return $this->createQueryBuilder('d')
+            ->andWhere('d.holderId = :holderId')
+            ->setParameter('holderId', $holderId)
+            ->orderBy('d.uploadedAt', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
 //    /**
 //     * @return Document[] Returns an array of Document objects
 //     */

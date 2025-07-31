@@ -16,6 +16,7 @@ use App\Repository\CustomerRepository;
 use App\State\CreateCustomerProcessor;
 use App\State\DeleteCustomerProcessor;
 use ApiPlatform\Metadata\GetCollection;
+use App\State\ValidateCustomerProcessor;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -25,6 +26,7 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE', fields: ['phone'])]
@@ -54,6 +56,13 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
         new Delete(
             security: 'is_granted("ROLE_CUSTOMER_DELETE")',
             processor: DeleteCustomerProcessor::class
+        ),
+        new Post(
+            uriTemplate: '/customers/{id}/activations',
+            security: 'is_granted("ROLE_CUSTOMER_ACTIVATE")',
+            denormalizationContext: ['groups' => 'customer:activate'],
+            processor: ValidateCustomerProcessor::class,
+            validationContext: ['groups' => ['activate_customer']]
         )
     ]
 )]
@@ -66,6 +75,9 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'email' => 'ipartial',
     'deleted' => 'exact',
     'userId' => 'exact',
+    'isVerified' => 'exact',
+    'isActivated' => 'exact',
+    'docStatus' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
@@ -73,6 +85,17 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 class Customer implements RessourceInterface
 {
     public const string ID_PREFIX = "CU";
+
+    public const string DOC_STATUS_VERIFIED = 'V';
+    public const string DOC_STATUS_NOT_VERIFIED = 'N';
+    public const string DOC_STATUS_IN_PROGRESS = 'P';
+    public const string DOC_STATUS_REFUSED = 'R';
+
+    public const string EVENT_CUSTOMER_CREATED = "created";
+    public const string EVENT_CUSTOMER_UPDATED = "updated";
+    public const string EVENT_CUSTOMER_DELETED = "deleted";
+    public const string EVENT_CUSTOMER_ACTIVATED = "activated";
+    public const string EVENT_CUSTOMER_DEACTIVATED = "deactivated";
 
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
@@ -142,6 +165,23 @@ class Customer implements RessourceInterface
     #[ORM\Column(length: 16, nullable: true)]
     #[Groups(groups: ['customer:get'])]
     private ?string $userId = null;
+
+    #[ORM\Column]
+    #[Groups(groups: ['customer:get'])]
+    private ?bool $isVerified = false;
+
+    #[ORM\Column]
+    #[Groups(groups: ['customer:get'])]
+    private ?bool $isActivated = false;
+
+    #[Assert\Type('bool', groups: ['activate_customer'])]
+    #[Assert\NotNull(groups: ['activate_customer'])]
+    #[Groups(groups: ['customer:activate'])]
+    public bool $activated = false;
+
+    #[ORM\Column(length: 1)]
+    #[Groups(groups: ['customer:get'])]
+    private ?string $docStatus = self::DOC_STATUS_NOT_VERIFIED;
 
     public function __construct()
     {
@@ -402,6 +442,50 @@ class Customer implements RessourceInterface
     public function setUserId($userId): static
     {
         $this->userId = $userId;
+
+        return $this;
+    }
+
+    public function getIsVerified(): ?bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function getIsActivated(): ?bool
+    {
+        return $this->isActivated;
+    }
+
+    public function setIsActivated(bool $isActivated): static
+    {
+        $this->isActivated = $isActivated;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of docStatus
+     */ 
+    public function getDocStatus(): string|null
+    {
+        return $this->docStatus;
+    }
+
+    /**
+     * Set the value of docStatus
+     *
+     * @return  self
+     */ 
+    public function setDocStatus(?string $docStatus): static
+    {
+        $this->docStatus = $docStatus;
 
         return $this;
     }

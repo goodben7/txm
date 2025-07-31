@@ -58,7 +58,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="https://i.ibb.co/FbTMy6nT/logo-long.png" alt="TINDA" class="logo">
+        <img src="https://i.postimg.cc/43gFndk4/temp-Imagetq-C9-QC.avif" alt="TINDA" class="logo">
         <h2 style="color: #4f46e5; margin-top: 10px;">Votre plateforme de gestion de colis</h2>
     </div>
 
@@ -79,7 +79,7 @@
             <p><strong>Votre compte a été créé avec succès :</strong></p>
             <ul>
                 <li>Identifiant : <strong>{{ user.email }}</strong></li>
-                <li>Mot de passe temporaire : <strong>{% if user.email is defined and user.email is not empty %}{{ user.email }}{% elseif user.phone is defined and user.phone is not empty %}{{ user.phone }}{% else %}Contactez l'administrateur{% endif %}</strong></li>
+                <li>Mot de passe temporaire : <strong>{% if user.plainPassword is defined and user.plainPassword is not empty %}{{ user.plainPassword }}{% elseif user.email is defined and user.email is not empty %}{{ user.email }}{% elseif user.phone is defined and user.phone is not empty %}{{ user.phone }}{% else %}Contactez l'administrateur{% endif %}</strong></li>
                 {% if user.phone %}
                 <li>Téléphone : <strong>{{ user.phone }}</strong></li>
                 {% endif %}

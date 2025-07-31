@@ -3,21 +3,23 @@
 namespace App\Manager;
 
 use App\Entity\Customer;
-use App\Message\Command\CommandBusInterface;
 use App\Model\NewCustomerModel;
 use App\Model\UserProxyIntertace;
-use Doctrine\ORM\EntityManagerInterface;
-use App\Exception\UnavailableDataException;
-use App\Exception\UnauthorizedActionException;
-use App\Message\Command\CreateUserCommand;
 use App\Repository\ProfileRepository;
+use App\Service\ActivityEventDispatcher;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Message\Command\CreateUserCommand;
+use App\Exception\UnavailableDataException;
+use App\Message\Command\CommandBusInterface;
+use App\Exception\UnauthorizedActionException;
 
 class CustomerManager
 {
     public function __construct(
         private EntityManagerInterface $em, 
         private CommandBusInterface $bus,
-        private ProfileRepository $profileRepository
+        private ProfileRepository $profileRepository,
+        private ActivityEventDispatcher $eventDispatcher,
     )
     {
     }
@@ -98,6 +100,30 @@ class CustomerManager
 
         $this->em->persist($customer);
         $this->em->flush();
+    }
+
+    public function validate(string $customerId, bool $activation = true) {
+        $customer = $this->findCustomer($customerId);
+
+        if ($customer->getIsActivated() === $activation) {
+            throw new UnauthorizedActionException('this action is not allowed');
+        }
+        $customer->setIsActivated($activation ? true : false);
+        $customer->setUpdatedAt(new \DateTimeImmutable('now'));
+
+        $this->em->persist($customer);
+        $this->em->flush();
+
+        if ($activation) {
+            $this->eventDispatcher->dispatch(
+                $customer, 
+                Customer::EVENT_CUSTOMER_ACTIVATED, 
+                null, 
+                null)
+            ;
+        }
+
+        return $customer; 
     }
 
 }

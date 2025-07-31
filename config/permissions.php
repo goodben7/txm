@@ -30,6 +30,7 @@ return static function (): iterable {
     yield Permission::new('ROLE_CUSTOMER_DETAILS', "Consulter les détails d'un client");
     yield Permission::new('ROLE_CUSTOMER_UPDATE', "Modifier un client");
     yield Permission::new('ROLE_CUSTOMER_DELETE', "Supprimer un client");
+    yield Permission::new('ROLE_CUSTOMER_ACTIVATE', "Activer un client"); 
 
     yield Permission::new('ROLE_DELIVERY_CREATE', "Créer une livraison");
     yield Permission::new('ROLE_DELIVERY_LIST', "Consulter la liste des livraisons");
@@ -81,4 +82,5 @@ return static function (): iterable {
     yield Permission::new('ROLE_DOC_CREATE', "Créer un document");
     yield Permission::new('ROLE_DOC_REJECT', "Refuser un document"); 
     yield Permission::new('ROLE_DOC_VALIDATE', "Valider un document"); 
+    yield Permission::new('ROLE_DOC_DELETE', "Supprimer un document");
 };
