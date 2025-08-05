@@ -78,7 +78,7 @@ class Customer implements RessourceInterface
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(IdGenerator::class)]
     #[ORM\Column(length: 16)]
-    #[Groups(groups: ['customer:get'])]
+    #[Groups(groups: ['customer:get', 'delivery:get'])]
     private ?string $id = null;
 
     #[ORM\Column(length: 60)]
