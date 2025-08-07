@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{{ notification.title ?? 'Nouvelle livraison créée' }} - TINDA</title>
+    <style>
+        /* Styles de base et réinitialisation pour la compatibilité des clients email */
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100% !important;
+            width: 100% !important;
+        }
+        * {
+            -ms-text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
+        div[style*="margin: 16px 0"] {
+            margin: 0 !important;
+        }
+        table, td {
+            mso-table-lspace: 0pt !important;
+            mso-table-rspace: 0pt !important;
+        }
+        table {
+            border-spacing: 0 !important;
+            border-collapse: collapse !important;
+            table-layout: fixed !important;
+            margin: 0 auto !important;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+            display: block;
+        }
+        
+        /* Styles principaux */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background-color: #f8fafc;
+        }
+        .wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .logo {
+            max-width: 150px;
+            height: auto;
+            margin: 0 auto;
+            transition: transform 0.3s ease;
+        }
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        .content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s ease;
+        }
+        .content:hover {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 28px;
+            background-color: #4f46e5;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 600;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .button:hover {
+            background-color: #4338ca;
+            transform: translateY(-2px);
+        }
+        .footer {
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 20px;
+            padding: 20px 0;
+        }
+        .info-box {
+            background-color: #f1f5f9;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            transition: background-color 0.3s ease;
+        }
+        .info-box:hover {
+            background-color: #e9eef5;
+        }
+        .tracking-box {
+            background-color: #f8fafc;
+            border: 2px solid #4f46e5;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .tracking-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(79, 70, 229, 0.1);
+        }
+        .tracking-number {
+            font-size: 26px;
+            font-weight: bold;
+            color: #4f46e5;
+            letter-spacing: 1.5px;
+        }
+        .delivery-info {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 28px 0;
+            gap: 16px;
+            justify-content: space-between;
+        }
+        .delivery-info-item {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            background-color: #ffffff;
+            padding: 18px 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .delivery-info-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+            border-color: #d1d5db;
+        }
+        .delivery-info-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4f46e5, #818cf8);
+        }
+        .delivery-info-label {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.7px;
+            font-weight: 500;
+        }
+        .delivery-info-value {
+            font-weight: 700;
+            font-size: 16px;
+            color: #1e293b;
+            letter-spacing: 0.2px;
+        }
+        .address-box {
+            background-color: #f1f5f9;
+            border-left: 4px solid #4f46e5;
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            transition: transform 0.3s ease, border-left-width 0.3s ease;
+        }
+        .address-box:hover {
+            transform: translateX(3px);
+            border-left-width: 6px;
+        }
+        .address-label {
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 8px;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+        }
+        .highlight {
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        h2 {
+            color: #1e293b;
+            font-size: 22px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+        p {
+            margin: 0 0 16px;
+        }
+        a {
+            color: #4f46e5;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Styles pour les appareils mobiles */
+        @media only screen and (max-width: 480px) {
+            .wrapper {
+                padding: 12px;
+            }
+            .content {
+                padding: 20px;
+            }
+            .delivery-info {
+                gap: 12px;
+            }
+            .delivery-info-item {
+                flex-basis: calc(50% - 12px);
+                min-width: calc(50% - 12px);
+                margin-bottom: 12px;
+                padding: 14px 10px;
+            }
+            .delivery-info-label {
+                font-size: 10px;
+                margin-bottom: 6px;
+            }
+            .delivery-info-value {
+                font-size: 14px;
+            }
+            .tracking-number {
+                font-size: 22px;
+            }
+            .button {
+                display: block;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <img src="https://i.postimg.cc/wjkf6sRj/temp-Imageuewo-DX.avif" alt="TINDA" class="logo">
+            <h2 style="color: #4f46e5; margin-top: 10px; font-size: 18px;">Votre plateforme de gestion de colis</h2>
+        </div>
+
+        <div class="content">
+            <h2>{{ notification.title ?? 'Nouvelle livraison créée' }}</h2>
+            
+            <div class="info-box">
+                {{ notification.body|raw }}
+            </div>
+
+            <!-- Numéro de suivi mis en évidence -->
+            <div class="tracking-box">
+                <div class="delivery-info-label">NUMÉRO DE SUIVI</div>
+                <div class="tracking-number">{{ notification.data['Numéro de suivi'] }}</div>
+            </div>
+            
+            <!-- Informations principales de livraison -->
+            <div class="delivery-info">
+                <div class="delivery-info-item">
+                    <div class="delivery-info-label">CRÉÉ LE</div>
+                    <div class="delivery-info-value">{{ notification.data['Creé le'] }}</div>
+                </div>
+                
+                <div class="delivery-info-item">
+                    <div class="delivery-info-label">DATE PRÉVUE</div>
+                    <div class="delivery-info-value">{{ notification.data['Date prévue'] }}</div>
+                </div>
+                
+                <div class="delivery-info-item">
+                    <div class="delivery-info-label">TYPE</div>
+                    <div class="delivery-info-value">{{ notification.data['Type'] }}</div>
+                </div>
+                
+                <div class="delivery-info-item">
+                    <div class="delivery-info-label">STATUT</div>
+                    <div class="delivery-info-value">{{ notification.data['Statut'] }}</div>
+                </div>
+            </div>
+            
+            <!-- Destinataire -->
+            {% if notification.data['Destinataire'] is defined and notification.data['Destinataire'] != 'Non spécifié' %}
+            <div class="address-box" style="border-left-color: #3b82f6;">
+                <div class="address-label" style="color: #3b82f6;">DESTINATAIRE</div>
+                <div>{{ notification.data['Destinataire'] }}</div>
+            </div>
+            {% endif %}
+            
+            <!-- Adresses -->
+            <div class="address-box">
+                <div class="address-label">ADRESSE DE RAMASSAGE</div>
+                <div>{{ notification.data['Adresse de ramassage'] }}</div>
+            </div>
+            
+            <div class="address-box">
+                <div class="address-label">ADRESSE DE LIVRAISON</div>
+                <div>{{ notification.data['Adresse de livraison'] }}</div>
+            </div>
+            
+            <!-- Description et informations supplémentaires -->
+            {% if notification.data['Description'] is defined and notification.data['Description'] != 'Aucune description' %}
+            <div class="info-box">
+                <strong>Description :</strong><br>
+                {{ notification.data['Description'] }}
+            </div>
+            {% endif %}
+            
+            {% if notification.data['Informations supplémentaires'] is defined and notification.data['Informations supplémentaires'] != 'Aucune' %}
+            <div class="info-box">
+                <strong>Informations supplémentaires :</strong><br>
+                {{ notification.data['Informations supplémentaires'] }}
+            </div>
+            {% endif %}
+
+            {% if notification.data.action_url is defined and notification.data.action_url is not empty %}
+            <p style="text-align: center;">
+                <a href="{{ notification.data.action_url }}" class="button">{{ notification.data.action_text ?? 'Suivre ma livraison' }}</a>
+            </p>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <p>Si vous avez des questions, merci de nous contacter à <a href="mailto:info@tinda.cd">info@tinda.cd</a>.</p>
+            <p>© {{ "now"|date("Y") }} TINDA. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>

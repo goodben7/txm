@@ -89,12 +89,12 @@ class DeliveryCancellationNotifier implements EventSubscriberInterface {
                 'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
                 'Statut' => $statusText,
                 'Raison de l\'annulation' => $cancellationMessage,
-                'Livreur assigné' => $deliveryPersonText,
-                'Contact du livreur' => $deliveryPersonPhoneText,
                 'Description' => $delivery->getDescription() ?: 'Aucune description',
+                'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
                 'Adresse de ramassage' => $pickupAddressText,
                 'Adresse de livraison' => $deliveryAddressText,
-                'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
+                'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune',
+                'Date d\'annulation' => $delivery->getCanceledAt() ? $delivery->getCanceledAt()->format('d/m/Y H:i') : 'Non spécifiée'
             ]);
             
             // Envoyer un email au client si disponible
@@ -117,12 +117,17 @@ class DeliveryCancellationNotifier implements EventSubscriberInterface {
                 $customerWhatsappNotification->setTarget($delivery->getCustomer()->getPhone());
                 $customerWhatsappNotification->setTargetType(Notification::TARGET_TYPE_WHATSAPP);
                 $customerWhatsappNotification->setData([
-                    'Numéro' => $delivery->getTrackingNumber(),
-                    'Date' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                    'Raison' => substr($cancellationMessage, 0, 100) . (strlen($cancellationMessage) > 100 ? '...' : ''),
-                    'Livreur' => $deliveryPersonText,
-                    'Contact' => $deliveryPersonPhoneText,
-                    'Statut' => $statusText
+                    'Numéro de suivi' => $delivery->getTrackingNumber(),
+                    'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
+                    'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
+                    'Statut' => $statusText,
+                    'Raison de l\'annulation' => $cancellationMessage,
+                    'Description' => $delivery->getDescription() ?: 'Aucune description',
+                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                    'Adresse de ramassage' => $pickupAddressText,
+                    'Adresse de livraison' => $deliveryAddressText,
+                    'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune',
+                    'Date d\'annulation' => $delivery->getCanceledAt() ? $delivery->getCanceledAt()->format('d/m/Y H:i') : 'Non spécifiée'
                 ]);
                 $this->entityManager->persist($customerWhatsappNotification);
                 $this->messageBus->dispatch(new SendNotificationMessage($customerWhatsappNotification));
@@ -136,13 +141,16 @@ class DeliveryCancellationNotifier implements EventSubscriberInterface {
             $recipientWhatsappNotification->setBody('Bonjour, votre livraison a été annulée.');
             $recipientWhatsappNotification->setSentVia(Notification::SENT_VIA_WHATSAPP);
             $recipientWhatsappNotification->setData([
-                'Numéro' => $delivery->getTrackingNumber(),
-                'Date' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                'Raison' => substr($cancellationMessage, 0, 100) . (strlen($cancellationMessage) > 100 ? '...' : ''),
+                'Numéro de suivi' => $delivery->getTrackingNumber(),
+                'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
                 'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                'Livreur' => $deliveryPersonText,
-                'Contact' => $deliveryPersonPhoneText,
-                'Adresse de livraison' => $delivery->getDeliveryAddress() ? substr($delivery->getDeliveryAddress()->getAddress(), 0, 50) . '...' : 'Non spécifiée'
+                'Statut' => $this->getStatusText($delivery->getStatus()),
+                'Raison de l\'annulation' => $cancellationMessage,
+                'Description' => $delivery->getDescription() ?: 'Aucune description',
+                'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                'Adresse de livraison' => $delivery->getDeliveryAddress() ? $delivery->getDeliveryAddress()->getAddress() : 'Non spécifiée',
+                'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune',
+                'Date d\'annulation' => $delivery->getCanceledAt() ? $delivery->getCanceledAt()->format('d/m/Y H:i') : 'Non spécifiée'
             ]);
             
             // Envoyer au numéro de téléphone du destinataire si disponible
@@ -167,11 +175,11 @@ class DeliveryCancellationNotifier implements EventSubscriberInterface {
                     'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
                     'Statut' => $this->getStatusText($delivery->getStatus()),
                     'Raison de l\'annulation' => $cancellationMessage,
-                    'Livreur assigné' => $deliveryPersonText,
-                    'Contact du livreur' => $deliveryPersonPhoneText,
                     'Description' => $delivery->getDescription() ?: 'Aucune description',
+                    'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
                     'Adresse de livraison' => $delivery->getDeliveryAddress() ? $delivery->getDeliveryAddress()->getAddress() : 'Non spécifiée',
-                    'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune'
+                    'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune',
+                    'Date d\'annulation' => $delivery->getCanceledAt() ? $delivery->getCanceledAt()->format('d/m/Y H:i') : 'Non spécifiée'
                 ]);
                 
                 $recipientEmailNotification->setSentVia(Notification::SENT_VIA_GMAIL);
@@ -179,94 +187,6 @@ class DeliveryCancellationNotifier implements EventSubscriberInterface {
                 $recipientEmailNotification->setTargetType(Notification::TARGET_TYPE_EMAIL);
                 $this->entityManager->persist($recipientEmailNotification);
                 $this->messageBus->dispatch(new SendNotificationMessage($recipientEmailNotification));
-            }
-            
-            // Envoyer un email à l'administrateur
-            $adminEmailNotification = new Notification();
-            $adminEmailNotification->setType(NotificationType::DELIVERY_CANCELED);
-            $adminEmailNotification->setSubject('[ADMIN] Livraison annulée');
-            $adminEmailNotification->setTitle('Livraison annulée');
-            $adminEmailNotification->setBody("Une livraison a été annulée. Veuillez consulter les détails ci-dessous.");
-            $adminEmailNotification->setSentVia(Notification::SENT_VIA_GMAIL);
-            $adminEmailNotification->setTarget($this->adminEmail);
-            $adminEmailNotification->setTargetType(Notification::TARGET_TYPE_EMAIL);
-            
-            // Données complètes pour l'administrateur
-            $adminEmailNotification->setData([
-                'Numéro de suivi' => $delivery->getTrackingNumber(),
-                'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                'Statut' => $statusText,
-                'Raison de l\'annulation' => $cancellationMessage,
-                'Livreur assigné' => $deliveryPersonText,
-                'Contact du livreur' => $deliveryPersonPhoneText,
-                'Description' => $delivery->getDescription() ?: 'Aucune description',
-                'Adresse de ramassage' => $pickupAddressText,
-                'Adresse de livraison' => $deliveryAddressText,
-                'Client' => $delivery->getCustomer() ? $delivery->getCustomer()->getFullname() . ' (' . $delivery->getCustomer()->getEmail() . ')' : 'Non spécifié',
-                'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . $delivery->getRecipient()->getEmail() . ')' : 'Non spécifié',
-                'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune',
-                'Date d\'annulation' => $delivery->getCanceledAt() ? $delivery->getCanceledAt()->format('d/m/Y H:i') : 'Non spécifiée'
-            ]);
-            
-            $this->entityManager->persist($adminEmailNotification);
-            $this->messageBus->dispatch(new SendNotificationMessage($adminEmailNotification));
-            
-            // Envoyer un message WhatsApp à l'administrateur
-            $adminWhatsappNotification = new Notification();
-            $adminWhatsappNotification->setType(NotificationType::DELIVERY_CANCELED);
-            $adminWhatsappNotification->setSubject('[ADMIN] Livraison annulée');
-            $adminWhatsappNotification->setTitle('Livraison annulée');
-            $adminWhatsappNotification->setBody('Une livraison a été annulée.');
-            $adminWhatsappNotification->setSentVia(Notification::SENT_VIA_WHATSAPP);
-            $adminWhatsappNotification->setTarget($this->adminPhone);
-            $adminWhatsappNotification->setTargetType(Notification::TARGET_TYPE_WHATSAPP);
-            
-            // Données résumées pour WhatsApp
-            $adminWhatsappNotification->setData([
-                'Numéro' => $delivery->getTrackingNumber(),
-                'Date' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                'Raison' => substr($cancellationMessage, 0, 100) . (strlen($cancellationMessage) > 100 ? '...' : ''),
-                'Livreur' => $deliveryPersonText,
-                'Client' => $delivery->getCustomer() ? $delivery->getCustomer()->getFullname() : 'Non spécifié',
-                'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() : 'Non spécifié',
-                'Statut' => $statusText,
-                'Annulée le' => $delivery->getCanceledAt() ? $delivery->getCanceledAt()->format('d/m/Y H:i') : 'Non spécifiée'
-            ]);
-            
-            $this->entityManager->persist($adminWhatsappNotification);
-            $this->messageBus->dispatch(new SendNotificationMessage($adminWhatsappNotification));
-            
-            // Envoyer un email au livreur si disponible
-            if ($delivery->getDeliveryPerson() && $delivery->getDeliveryPerson()->getEmail()) {
-                $deliveryPersonEmailNotification = new Notification();
-                $deliveryPersonEmailNotification->setType(NotificationType::DELIVERY_CANCELED);
-                $deliveryPersonEmailNotification->setSubject('Livraison annulée');
-                $deliveryPersonEmailNotification->setTitle('Livraison annulée');
-                $deliveryPersonEmailNotification->setBody("Bonjour, une livraison que vous deviez effectuer a été annulée. Veuillez consulter les détails ci-dessous.");
-                $deliveryPersonEmailNotification->setSentVia(Notification::SENT_VIA_GMAIL);
-                $deliveryPersonEmailNotification->setTarget($delivery->getDeliveryPerson()->getEmail());
-                $deliveryPersonEmailNotification->setTargetType(Notification::TARGET_TYPE_EMAIL);
-                
-                // Données complètes pour le livreur
-                $deliveryPersonEmailNotification->setData([
-                    'Numéro de suivi' => $delivery->getTrackingNumber(),
-                    'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
-                    'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                    'Statut' => $statusText,
-                    'Raison de l\'annulation' => $cancellationMessage,
-                    'Description' => $delivery->getDescription() ?: 'Aucune description',
-                    'Adresse de ramassage' => $pickupAddressText,
-                    'Adresse de livraison' => $deliveryAddressText,
-                    'Client' => $delivery->getCustomer() ? $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
-                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
-                    'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune',
-                    'Date d\'annulation' => $delivery->getCanceledAt() ? $delivery->getCanceledAt()->format('d/m/Y H:i') : 'Non spécifiée'
-                ]);
-                
-                $this->entityManager->persist($deliveryPersonEmailNotification);
-                $this->messageBus->dispatch(new SendNotificationMessage($deliveryPersonEmailNotification));
             }
             
             // Envoyer un message WhatsApp au livreur si disponible
@@ -282,15 +202,18 @@ class DeliveryCancellationNotifier implements EventSubscriberInterface {
                 
                 // Données résumées pour WhatsApp
                 $deliveryPersonWhatsappNotification->setData([
-                    'Numéro' => $delivery->getTrackingNumber(),
-                    'Date' => $delivery->getDeliveryDate()->format('d/m/Y'),
+                    'Numéro de suivi' => $delivery->getTrackingNumber(),
+                    'Date prévue' => $delivery->getDeliveryDate()->format('d/m/Y'),
                     'Type' => $delivery->getType() === Delivery::TYPE_PACKAGE ? 'Colis' : 'Courrier',
-                    'Raison' => substr($cancellationMessage, 0, 100) . (strlen($cancellationMessage) > 100 ? '...' : ''),
-                    'Client' => $delivery->getCustomer() ? $delivery->getCustomer()->getFullname() : 'Non spécifié',
-                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() : 'Non spécifié',
-                    'Adresse de ramassage' => substr($pickupAddressText, 0, 50) . (strlen($pickupAddressText) > 50 ? '...' : ''),
-                    'Adresse de livraison' => substr($deliveryAddressText, 0, 50) . (strlen($deliveryAddressText) > 50 ? '...' : ''),
-                    'Annulée le' => $delivery->getCanceledAt() ? $delivery->getCanceledAt()->format('d/m/Y H:i') : 'Non spécifiée'
+                    'Statut' => $statusText,
+                    'Raison de l\'annulation' => $cancellationMessage,
+                    'Description' => $delivery->getDescription() ?: 'Aucune description',
+                    'Adresse de ramassage' => $pickupAddressText,
+                    'Adresse de livraison' => $deliveryAddressText,
+                    'Marchand' => $delivery->getCustomer() ? $delivery->getCustomer()->getCompanyName() . ' - ' . $delivery->getCustomer()->getFullname() . ' (' . ($delivery->getCustomer()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                    'Destinataire' => $delivery->getRecipient() ? $delivery->getRecipient()->getFullname() . ' (' . ($delivery->getRecipient()->getPhone() ?: 'Pas de téléphone') . ')' : 'Non spécifié',
+                    'Informations supplémentaires' => $delivery->getAdditionalInformation() ?: 'Aucune',
+                    'Date d\'annulation' => $delivery->getCanceledAt() ? $delivery->getCanceledAt()->format('d/m/Y H:i') : 'Non spécifiée'
                 ]);
                 
                 $this->entityManager->persist($deliveryPersonWhatsappNotification);

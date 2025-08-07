@@ -80,7 +80,7 @@ class Recipient implements RessourceInterface
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(IdGenerator::class)]
     #[ORM\Column(length: 16)]
-    #[Groups(groups: ['recipient:get'])]
+    #[Groups(groups: ['recipient:get', 'delivery:get'])]
     private ?string $id = null;
 
     #[ORM\Column(length: 120)]

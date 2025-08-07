@@ -53,7 +53,11 @@ class ActivityEventDispatcher
 
         $eventName = ActivityEvent::getEventName(null === $ressource ? $ressourceClass : get_class($ressource), $action);
 
-        $identifier = $this->security->getUser()->getUserIdentifier();
+        if ($this->security->getUser()) {
+            $identifier = $this->security->getUser()->getUserIdentifier();
+        } else {
+            $identifier = $delivery->getCustomer()->getEmail() ?? $delivery->getCustomer()->getPhone();
+        }
 
         /** @var User|null $user */
         $user = $this->userRepository->findByEmailOrPhone($identifier);
