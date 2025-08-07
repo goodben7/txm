@@ -4,10 +4,16 @@ namespace App\Manager;
 
 use App\Entity\User;
 use App\Entity\Profile;
+use App\Entity\Customer;
 use App\Model\NewUserModel;
+use App\Model\UserProxyIntertace;
+use App\Repository\ProfileRepository;
 use App\Service\ActivityEventDispatcher;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Message\Command\CreateUserCommand;
 use App\Exception\UnavailableDataException;
+use App\Model\NewRegisterUserCustomerModel;
+use App\Message\Command\CommandBusInterface;
 use App\Exception\InvalidActionInputException;
 use App\Exception\UnauthorizedActionException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -18,6 +24,8 @@ class UserManager
         private EntityManagerInterface $em, 
         private UserPasswordHasherInterface $hasher,
         private ActivityEventDispatcher $eventDispatcher,
+        private CommandBusInterface $bus,
+        private ProfileRepository $profileRepository
     )
     {
     }
@@ -150,6 +158,51 @@ class UserManager
         
         return $user;
     }
+
+    public function registerCustomer(NewRegisterUserCustomerModel $model): User
+    {
+        $customer = new Customer();
     
+        $customer->setCompanyName($model->companyName);
+        $customer->setFullname($model->fullname);
+        $customer->setPhone($model->phone);
+        $customer->setPhone2($model->phone2);
+        $customer->setEmail($model->email);
+        $customer->setCreatedAt(new \DateTimeImmutable('now'));
+
+        foreach ($model->addresses as $addr) {
+            $customer->addAddress($addr);
+        }
+
+        try {
+            $this->em->persist($customer);
+        } catch (\Exception $e) {
+            throw new UnavailableDataException($e->getMessage());
+        }
+
+        $profile = $this->profileRepository->findOneBy(['personType' => UserProxyIntertace::PERSON_SENDER]);
+
+        if (null === $profile) {
+            throw new UnavailableDataException('cannot find profile with person type: sender');
+        }
+
+        $user = $this->bus->dispatch(
+            new CreateUserCommand(
+                $customer->getEmail(),
+                $model->plainPassword,
+                $profile,
+                $customer->getPhone(),
+                $customer->getFullname(),
+                $customer->getId(),
+            )
+        );
+
+        $customer->setUserId($user->getId());
+
+        $this->em->persist($customer);
+        $this->em->flush();
+
+        return $user;
+    }
 
 }

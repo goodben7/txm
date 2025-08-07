@@ -56,7 +56,7 @@ class UserCreationEmailNotifier implements EventSubscriberInterface
                 $emailNotification->setData([
                     'Identifiant' => $user->getEmail(),
                     'Nom' => $user->getDisplayName() ?? 'Utilisateur',
-                    'Date d\'inscription' => $user->getCreatedAt()->format('d/m/Y'),
+                    'Date d\'inscription' => $user->getCreatedAt()->format('Y-m-d'),
                     'Téléphone' => $user->getPhone() ?? 'Non spécifié'
                 ]);
                 
@@ -80,8 +80,8 @@ class UserCreationEmailNotifier implements EventSubscriberInterface
                 $whatsappNotification->setData([
                     'Identifiant' => $user->getEmail() ?? 'Non spécifié',
                     'Nom' => $user->getDisplayName() ?? 'Utilisateur',
-                    'Date d\'inscription' => $user->getCreatedAt()->format('d/m/Y'),
-                    'Mot de passe temporaire' => $user->getEmail() ?: ($user->getPhone() ?: 'Contactez l\'administrateur')
+                    'Date d\'inscription' => $user->getCreatedAt()->format('Y-m-d'),
+                    'Mot de passe temporaire' => $user->getPlainPassword() ?: ($user->getEmail() ?: ($user->getPhone() ?: 'Contactez l\'administrateur'))
                 ]);
                 
                 // Persister et envoyer la notification

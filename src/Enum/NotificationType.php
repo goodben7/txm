@@ -31,6 +31,7 @@ class NotificationType
     public const string ROLE_ASSIGNED = 'usr_rol'; // Rôle modifié par admin
     public const string ERROR_REPORTED = 'sys_err'; // Erreur système notifiée
     public const string MAINTENANCE_ALERT = 'sys_mnt'; // Alerte de maintenance planifiée
+    public const string RESET_PASSWORD = 'res_pwd';
 
     public static function getAll(): array
     {
