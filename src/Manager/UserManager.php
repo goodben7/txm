@@ -178,6 +178,7 @@ class UserManager
 
         try {
             $this->em->persist($customer);
+            $this->em->flush();
         } catch (\Exception $e) {
             throw new UnavailableDataException($e->getMessage());
         }
