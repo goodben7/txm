@@ -36,6 +36,8 @@ class UserManager
 
         $user->setEmail($model->email);
         $user->setCreatedAt(new \DateTimeImmutable('now'));
+        // Initialiser explicitement plainPassword avant de l'utiliser pour le hachage
+        $user->setPlainPassword($model->plainPassword);
         $user->setPassword($this->hasher->hashPassword($user, $model->plainPassword));
         $user->setPhone($model->phone);
         $user->setDisplayName($model->displayName);
