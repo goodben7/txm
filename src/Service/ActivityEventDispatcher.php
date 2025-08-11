@@ -55,8 +55,12 @@ class ActivityEventDispatcher
 
         if ($this->security->getUser()) {
             $identifier = $this->security->getUser()->getUserIdentifier();
-        } else {
+        } elseif ($delivery?->getCustomer()) {
             $identifier = $delivery->getCustomer()->getEmail() ?? $delivery->getCustomer()->getPhone();
+        } else {
+            // Si aucun utilisateur n'est connecté et qu'il n'y a pas de livraison avec client
+            // On utilise un identifiant par défaut pour éviter l'erreur
+            $identifier = 'system';
         }
 
         /** @var User|null $user */
