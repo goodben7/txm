@@ -24,7 +24,9 @@ class NewCustomerModel
         public ?string $phone2 = null,
 
         #[Assert\Email]
-        public ?string $email = null
+        public ?string $email = null,
+
+        public ?bool $isPartner = false,
 
     )
     {  

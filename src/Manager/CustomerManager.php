@@ -39,6 +39,7 @@ class CustomerManager
         $customer->setPhone($model->phone);
         $customer->setPhone2($model->phone2);
         $customer->setEmail($model->email);
+        $customer->setIsPartner($model->isPartner);
         $customer->setCreatedAt(new \DateTimeImmutable('now'));
 
         foreach ($model->addresses as $addr) {

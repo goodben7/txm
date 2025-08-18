@@ -78,6 +78,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     'isVerified' => 'exact',
     'isActivated' => 'exact',
     'docStatus' => 'exact',
+    'isPartner' => 'exact'
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
@@ -183,12 +184,24 @@ class Customer implements RessourceInterface
     #[Groups(groups: ['customer:get'])]
     private ?string $docStatus = self::DOC_STATUS_NOT_VERIFIED;
 
+    #[ORM\Column(options: ['default' => false])]
+    #[Groups(groups: ['customer:get'])]
+    private ?bool $isPartner = false;
+
+    /**
+     * @var Collection<int, Store>
+     */
+    #[ORM\OneToMany(targetEntity: Store::class, mappedBy: 'customer', cascade: ['all'])]
+    #[Groups(groups: ['customer:get'])]
+    private Collection $stores;
+
     public function __construct()
     {
         $this->deliveries = new ArrayCollection();
         $this->addresses = new ArrayCollection();
         $this->recipients = new ArrayCollection();
         $this->deliveryModels = new ArrayCollection();
+        $this->stores = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -486,6 +499,51 @@ class Customer implements RessourceInterface
     public function setDocStatus(?string $docStatus): static
     {
         $this->docStatus = $docStatus;
+
+        return $this;
+    }
+
+    public function getIsPartner(): bool|null
+    {
+        return $this->isPartner;
+    }
+
+    /**
+     * @return  self
+     */ 
+    public function setIsPartner(?bool $isPartner): static
+    {
+        $this->isPartner = $isPartner;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Store>
+     */
+    public function getStores(): Collection
+    {
+        return $this->stores;
+    }
+
+    public function addStore(Store $store): static
+    {
+        if (!$this->stores->contains($store)) {
+            $this->stores->add($store);
+            $store->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStore(Store $store): static
+    {
+        if ($this->stores->removeElement($store)) {
+            // set the owning side to null (unless already changed)
+            if ($store->getCustomer() === $this) {
+                $store->setCustomer(null);
+            }
+        }
 
         return $this;
     }
