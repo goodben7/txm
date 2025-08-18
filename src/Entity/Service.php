@@ -7,23 +7,27 @@ use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Model\RessourceInterface;
+use App\Model\AttachmentInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ServiceRepository;
 use ApiPlatform\Metadata\GetCollection;
+use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use Symfony\Component\HttpFoundation\File\File;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use Doctrine\Common\Collections\ArrayCollection;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 
+#[Vich\Uploadable]
 #[ORM\Entity(repositoryClass: ServiceRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
@@ -48,6 +52,15 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
             denormalizationContext: ['groups' => 'service:patch',],
             processor: PersistProcessor::class,
         ),
+        new Post(
+            uriTemplate: "services/{id}/logo",
+            denormalizationContext: ['groups' => 'service:logo'],
+            normalizationContext: ['groups' => 'service:list', 'service:get'], 
+            security: 'is_granted("ROLE_SERVICE_UPDATE")',
+            inputFormats: ['multipart' => ['multipart/form-data']],
+            processor: PersistProcessor::class,
+            status: 200
+        )
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
@@ -58,7 +71,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
-class Service implements RessourceInterface
+class Service implements RessourceInterface, AttachmentInterface 
 {
     public const string ID_PREFIX = "SE";
 
@@ -105,6 +118,23 @@ class Service implements RessourceInterface
     #[ORM\OneToMany(targetEntity: Store::class, mappedBy: 'service', cascade: ['all'])]
     #[Groups(['service:get', 'service:list'])]
     private Collection $stores;
+
+    #[Groups(groups: ['service:logo'])]
+    #[Assert\NotBlank()]
+    #[Assert\NotNull()]
+    #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePath', size: 'fileSize')]
+    private ?File $file = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(groups: ['service:get', 'service:list'])]
+    private ?string $filePath = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['service:get', 'service:list'])]
+    private ?int $fileSize = null;
+
+    #[Groups(groups: ['service:get', 'service:list'])]
+    private ?string $contentUrl;
 
     public function __construct()
     {
@@ -226,6 +256,90 @@ class Service implements RessourceInterface
                 $store->setService(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * Get the value of filePath
+     */ 
+    public function getFilePath(): string|null
+    {
+        return $this->filePath;
+    }
+
+    /**
+     * Set the value of filePath
+     *
+     * @return  self
+     */ 
+    public function setFilePath(?string $filePath): static
+    {
+        $this->filePath = $filePath;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of fileSize
+     */ 
+    public function getFileSize(): int|null
+    {
+        return $this->fileSize;
+    }
+
+    /**
+     * Set the value of fileSize
+     *
+     * @return  self
+     */ 
+    public function setFileSize(?int $fileSize): static
+    {
+        $this->fileSize = $fileSize;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of file
+     */ 
+    public function getFile(): File|null
+    {
+        return $this->file;
+    }
+
+    /**
+     * Set the value of file
+     *
+     * @return  self
+     */ 
+    public function setFile($file): static
+    {
+        $this->file = $file;
+
+        if (null !== $file) {
+            $this->updatedAt = new \DateTimeImmutable('now');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the value of contentUrl
+     */ 
+    public function getContentUrl(): string|null
+    {
+        return $this->contentUrl;
+    }
+
+    /**
+     * Set the value of contentUrl
+     *
+     * @return  self
+     */ 
+    public function setContentUrl($contentUrl): static
+    {
+        $this->contentUrl = $contentUrl;
 
         return $this;
     }
