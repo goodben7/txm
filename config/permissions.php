@@ -83,4 +83,19 @@ return static function (): iterable {
     yield Permission::new('ROLE_DOC_REJECT', "Refuser un document"); 
     yield Permission::new('ROLE_DOC_VALIDATE', "Valider un document"); 
     yield Permission::new('ROLE_DOC_DELETE', "Supprimer un document");
+    
+    yield Permission::new('ROLE_SERVICE_DETAILS', "Consulter les détails d'un service");
+    yield Permission::new('ROLE_SERVICE_LIST', "Consulter la liste des services");
+    yield Permission::new('ROLE_SERVICE_CREATE', "Créer un service");
+    yield Permission::new('ROLE_SERVICE_UPDATE', "Modifier un service");
+    
+    yield Permission::new('ROLE_STORE_DETAILS', "Consulter les détails d'un magasin");
+    yield Permission::new('ROLE_STORE_LIST', "Consulter la liste des magasins");
+    yield Permission::new('ROLE_STORE_CREATE', "Créer un magasin");
+    yield Permission::new('ROLE_STORE_UPDATE', "Modifier un magasin");
+    
+    yield Permission::new('ROLE_PRODUCT_DETAILS', "Consulter les détails d'un produit");
+    yield Permission::new('ROLE_PRODUCT_LIST', "Consulter la liste des produits");
+    yield Permission::new('ROLE_PRODUCT_CREATE', "Créer un produit");
+    yield Permission::new('ROLE_PRODUCT_UPDATE', "Modifier un produit");
 };

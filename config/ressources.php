@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Entity\User;
+use App\Entity\Store;
+use App\Entity\Product;
 use App\Entity\Profile;
+use App\Entity\Service;
 use App\Entity\Customer;
 use App\Entity\Delivery;
 use App\Entity\Document;
@@ -24,4 +27,7 @@ return static function (): iterable {
     yield Ressource::new("notification", Notification::class, "NF", true);
     yield Ressource::new("customer", Customer::class, "CU", true);
     yield Ressource::new("document", Document::class, "DO", true);
+    yield Ressource::new("service", Service::class, "SE", true);
+    yield Ressource::new("store", Store::class, "ST", true);
+    yield Ressource::new("product", Product::class, "PD", true);
 };

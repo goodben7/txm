@@ -26,7 +26,8 @@ class CreateCustomerProcessor implements ProcessorInterface
             $data->addresses, 
             $data->phone, 
             $data->phone2, 
-            $data->email
+            $data->email,
+            $data->isPartner,
         );
  
         return $this->manager->createFrom($model); 
