@@ -9,7 +9,6 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
 use App\Model\RessourceInterface;
-use App\Model\AttachmentInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use App\Repository\StoreRepository;
 use App\State\CreateStoreProcessor;
@@ -68,7 +67,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
-class Store implements RessourceInterface, AttachmentInterface 
+class Store implements RessourceInterface 
 {
     public const string ID_PREFIX = "ST";
 
