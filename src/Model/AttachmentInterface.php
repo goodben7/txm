@@ -10,4 +10,6 @@ interface AttachmentInterface {
     public function getContentUrl(): ?string;
 
     public function setContentUrl(?string $contentUrl);
+
+    public function setContentUrlSecondary(?string $contentUrlSecondary);
 }

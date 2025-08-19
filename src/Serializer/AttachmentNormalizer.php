@@ -22,6 +22,7 @@ class AttachmentNormalizer implements NormalizerInterface {
     public function normalize($object, ?string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
     {
         $object->setContentUrl($this->storage->resolveUri($object, 'file'));
+        $object->setContentUrlSecondary($this->storage->resolveUri($object, 'fileSecondary'));
 
         return $this->normalizer->normalize($object, $format, $context);
     }

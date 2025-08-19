@@ -9,19 +9,23 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
 use App\Model\RessourceInterface;
+use App\Model\AttachmentInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use App\Repository\StoreRepository;
 use App\State\CreateStoreProcessor;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use Symfony\Component\HttpFoundation\File\File;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 
+#[Vich\Uploadable]
 #[ORM\Entity(repositoryClass: StoreRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
@@ -45,6 +49,14 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
             denormalizationContext: ['groups' => 'store:patch'],
             processor: PersistProcessor::class,
         ),
+        new Post(
+            uriTemplate: "stores/{id}/logo",
+            denormalizationContext: ['groups' => 'store:logo'],
+            security: 'is_granted("ROLE_STORE_UPDATE")',
+            inputFormats: ['multipart' => ['multipart/form-data']],
+            processor: PersistProcessor::class,
+            status: 200
+        )
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
@@ -56,7 +68,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
-class Store implements RessourceInterface
+class Store implements RessourceInterface, AttachmentInterface 
 {
     public const string ID_PREFIX = "ST";
 
@@ -104,6 +116,36 @@ class Store implements RessourceInterface
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['store:get', 'store:patch'])]
     private ?Service $service = null;
+
+    #[Groups(groups: ['store:logo'])]
+    #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePath', size: 'fileSize')]
+    private ?File $file = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(groups: ['store:get'])]
+    private ?string $filePath = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['store:get'])]
+    private ?int $fileSize = null;
+
+    #[Groups(groups: ['store:get'])]
+    private ?string $contentUrl;
+
+    #[Groups(groups: ['store:logo'])]
+    #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePathSecondary', size: 'fileSizeSecondary')]
+    private ?File $fileSecondary = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(groups: ['store:get'])]
+    private ?string $filePathSecondary = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['store:get'])]
+    private ?int $fileSizeSecondary = null;
+
+    #[Groups(groups: ['store:get'])]
+    private ?string $contentUrlSecondary;
 
     public function getId(): ?string
     {
@@ -222,5 +264,157 @@ class Store implements RessourceInterface
     public function updateUpdatedAt(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    /**
+     * Get the value of filePath
+     */ 
+    public function getFilePath(): string|null
+    {
+        return $this->filePath;
+    }
+
+    /**
+     * Set the value of filePath
+     *
+     * @return  self
+     */ 
+    public function setFilePath(?string $filePath): static
+    {
+        $this->filePath = $filePath;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of fileSize
+     */ 
+    public function getFileSize(): int|null
+    {
+        return $this->fileSize;
+    }
+
+    /**
+     * Set the value of fileSize
+     *
+     * @return  self
+     */ 
+    public function setFileSize(?int $fileSize): static
+    {
+        $this->fileSize = $fileSize;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of file
+     */ 
+    public function getFile(): File|null
+    {
+        return $this->file;
+    }
+
+    /**
+     * Set the value of file
+     *
+     * @return  self
+     */ 
+    public function setFile($file): static
+    {
+        $this->file = $file;
+
+        if (null !== $file) {
+            $this->updatedAt = new \DateTimeImmutable('now');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the value of contentUrl
+     */ 
+    public function getContentUrl(): string|null
+    {
+        return $this->contentUrl;
+    }
+
+    /**
+     * Set the value of contentUrl
+     *
+     * @return  self
+     */ 
+    public function setContentUrl($contentUrl): static
+    {
+        $this->contentUrl = $contentUrl;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of file
+     */ 
+    public function getFileSecondary()
+    {
+        return $this->fileSecondary;
+    }
+
+    /**
+     * Set the value of file
+     *
+     * @return  self
+     */ 
+    public function setFileSecondary($fileSecondary)
+    {
+        $this->fileSecondary = $fileSecondary;
+
+        if (null !== $fileSecondary) {
+            $this->updatedAt = new \DateTimeImmutable('now');
+        }
+
+        return $this;
+    }
+
+    public function getFilePathSecondary(): ?string
+    {
+        return $this->filePathSecondary;
+    }
+
+    public function setFilePathSecondary(?string $filePathSecondary): self
+    {
+        $this->filePathSecondary = $filePathSecondary;
+
+        return $this;
+    }
+
+    public function getFileSizeSecondary(): ?int
+    {
+        return $this->fileSizeSecondary;
+    }
+
+    public function setFileSizeSecondary(?int $fileSizeSecondary): self
+    {
+        $this->fileSizeSecondary = $fileSizeSecondary;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of contentUrlSecondary
+     */ 
+    public function getContentUrlSecondary(): ?string
+    {
+        return $this->contentUrlSecondary;
+    }
+
+    /**
+     * Set the value of contentUrlSecondary
+     *
+     * @return  self
+     */ 
+    public function setContentUrlSecondary(?string $contentUrlSecondary): self
+    {
+        $this->contentUrlSecondary = $contentUrlSecondary;
+
+        return $this;
     }
 }

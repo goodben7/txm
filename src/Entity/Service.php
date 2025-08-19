@@ -27,20 +27,20 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 
-#[Vich\Uploadable]
+
 #[ORM\Entity(repositoryClass: ServiceRepository::class)]
+#[Vich\Uploadable]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
+    normalizationContext: ['groups' => 'service:get'], 
     operations:[
         new Get(
             security: 'is_granted("ROLE_SERVICE_DETAILS")',
             provider: ItemProvider::class,
-            normalizationContext: ['groups' => 'service:get'], 
         ),
         new GetCollection(
             security: 'is_granted("ROLE_SERVICE_LIST")',
             provider: CollectionProvider::class,
-            normalizationContext: ['groups' => 'service:list'], 
         ),
         new Post(
             security: 'is_granted("ROLE_SERVICE_CREATE")',
@@ -55,7 +55,6 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
         new Post(
             uriTemplate: "services/{id}/logo",
             denormalizationContext: ['groups' => 'service:logo'],
-            normalizationContext: ['groups' => 'service:list', 'service:get'], 
             security: 'is_granted("ROLE_SERVICE_UPDATE")',
             inputFormats: ['multipart' => ['multipart/form-data']],
             processor: PersistProcessor::class,
@@ -78,63 +77,76 @@ class Service implements RessourceInterface, AttachmentInterface
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(IdGenerator::class)]
-    #[Groups(['service:get', 'service:list'])]
+    #[Groups(['service:get'])]
     #[ORM\Column(length: 16)]
     private ?string $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank()]
     #[Assert\NotNull()]
-    #[Groups(['service:get', 'service:list', 'service:post', 'service:patch'])]
+    #[Groups(['service:get', 'service:post', 'service:patch'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['service:get', 'service:list', 'service:post', 'service:patch'])]
+    #[Groups(['service:get', 'service:post', 'service:patch'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 15)]
     #[Assert\NotBlank()]
     #[Assert\NotNull()]
     #[Assert\Choice(callback: [ServiceType::class, 'getAll'], message: 'Invalid service type.')]
-    #[Groups(['service:get', 'service:list',  'service:post', 'service:patch'])]
+    #[Groups(['service:get',  'service:post', 'service:patch'])]
     private ?string $type = null;
 
     #[ORM\Column]
     #[Assert\NotNull()]
-    #[Groups(['service:get', 'service:list', 'service:post', 'service:patch'])]
+    #[Groups(['service:get', 'service:post', 'service:patch'])]
     private ?bool $active = null;
 
     #[ORM\Column]
-    #[Groups(['service:get', 'service:list'])]
+    #[Groups(['service:get'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['service:get', 'service:list'])]
+    #[Groups(['service:get'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     /**
      * @var Collection<int, Store>
      */
     #[ORM\OneToMany(targetEntity: Store::class, mappedBy: 'service', cascade: ['all'])]
-    #[Groups(['service:get', 'service:list'])]
+    #[Groups(['service:get'])]
     private Collection $stores;
 
     #[Groups(groups: ['service:logo'])]
-    #[Assert\NotBlank()]
-    #[Assert\NotNull()]
     #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePath', size: 'fileSize')]
     private ?File $file = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(groups: ['service:get', 'service:list'])]
+    #[Groups(groups: ['service:get'])]
     private ?string $filePath = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(groups: ['service:get', 'service:list'])]
+    #[Groups(groups: ['service:get'])]
     private ?int $fileSize = null;
 
-    #[Groups(groups: ['service:get', 'service:list'])]
+    #[Groups(groups: ['service:get'])]
     private ?string $contentUrl;
+
+    #[Groups(groups: ['service:logo'])]
+    #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePathSecondary', size: 'fileSizeSecondary')]
+    private ?File $fileSecondary = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(groups: ['service:get'])]
+    private ?string $filePathSecondary = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['service:get'])]
+    private ?int $fileSizeSecondary = null;
+
+    #[Groups(groups: ['service:get'])]
+    private ?string $contentUrlSecondary;
 
     public function __construct()
     {
@@ -340,6 +352,74 @@ class Service implements RessourceInterface, AttachmentInterface
     public function setContentUrl($contentUrl): static
     {
         $this->contentUrl = $contentUrl;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of file
+     */ 
+    public function getFileSecondary()
+    {
+        return $this->fileSecondary;
+    }
+
+    /**
+     * Set the value of file
+     *
+     * @return  self
+     */ 
+    public function setFileSecondary($fileSecondary)
+    {
+        $this->fileSecondary = $fileSecondary;
+
+        if (null !== $fileSecondary) {
+            $this->updatedAt = new \DateTimeImmutable('now');
+        }
+
+        return $this;
+    }
+
+    public function getFilePathSecondary(): ?string
+    {
+        return $this->filePathSecondary;
+    }
+
+    public function setFilePathSecondary(?string $filePathSecondary): self
+    {
+        $this->filePathSecondary = $filePathSecondary;
+
+        return $this;
+    }
+
+    public function getFileSizeSecondary(): ?int
+    {
+        return $this->fileSizeSecondary;
+    }
+
+    public function setFileSizeSecondary(?int $fileSizeSecondary): self
+    {
+        $this->fileSizeSecondary = $fileSizeSecondary;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of contentUrlSecondary
+     */ 
+    public function getContentUrlSecondary(): ?string
+    {
+        return $this->contentUrlSecondary;
+    }
+
+    /**
+     * Set the value of contentUrlSecondary
+     *
+     * @return  self
+     */ 
+    public function setContentUrlSecondary(?string $contentUrlSecondary): self
+    {
+        $this->contentUrlSecondary = $contentUrlSecondary;
 
         return $this;
     }
