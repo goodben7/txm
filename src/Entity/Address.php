@@ -50,7 +50,9 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'isMain' => 'exact',
     'isPublic' => 'exact',
     'customer' => 'exact',
-    'recipient' => 'exact'
+    'recipient' => 'exact',
+    'township' => 'exact',
+    'user' => 'exact',
 ])]
 class Address
 {
@@ -78,6 +80,7 @@ class Address
     private ?Customer $customer = null;
 
     #[ORM\ManyToOne(inversedBy: 'addresses')]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(groups: ['address:post'])]
     private ?Recipient $recipient = null;
 
@@ -94,6 +97,11 @@ class Address
     #[ORM\Column]
     #[Groups(groups: ['customer:get', 'address:get', 'address:post', 'address:patch', 'recipient:get'])]
     private ?bool $isPublic = false;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(groups: ['address:post', 'address:get', 'address:patch'])]
+    private ?User $user = null;
 
     public function __construct()
     {
@@ -215,6 +223,18 @@ class Address
     public function setIsPublic(bool $isPublic): static
     {
         $this->isPublic = $isPublic;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }

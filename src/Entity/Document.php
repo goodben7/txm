@@ -72,7 +72,6 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'type' => 'exact',
     'status' => 'exact',
     'documentRefNumber' => 'start',
-    'holder' => 'exact',
     'validatedBy' => 'exact',
     'rejectedBy' => 'exact'
 ])]

@@ -28,7 +28,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 
 #[ORM\Entity(repositoryClass: RecipientRepository::class)]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PHONE', fields: ['phone'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USER_CUSTOMER', fields: ['userId', 'customer'])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => 'recipient:get'],
@@ -66,6 +66,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'deleted' => 'exact',
     'customer' => 'exact',
     'recipientType' => 'exact',
+    'userId' => 'exact'
 
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
@@ -134,6 +135,10 @@ class Recipient implements RessourceInterface
     #[ORM\ManyToOne]
     #[Groups(groups: ['recipient:get', 'recipient:patch'])]
     private ?RecipientType $recipientType = null;
+
+    #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(groups: ['customer:get'])]
+    private ?string $userId = null;
 
     public function __construct()
     {
@@ -332,6 +337,26 @@ class Recipient implements RessourceInterface
     public function setRecipientType(?RecipientType $recipientType): static
     {
         $this->recipientType = $recipientType;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of userId
+     */ 
+    public function getUserId(): string|null
+    {
+        return $this->userId;
+    }
+
+    /**
+     * Set the value of userId
+     *
+     * @return  self
+     */ 
+    public function setUserId(?string $userId): static
+    {
+        $this->userId = $userId;
 
         return $this;
     }
