@@ -4,12 +4,14 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Entity\AuthSession;
+use App\Event\OtpSentEvent;
 use App\Model\UserProxyIntertace;
 use App\Repository\UserRepository;
 use App\Repository\ProfileRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\AuthSessionRepository;
 use App\Exception\UnavailableDataException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class AuthService
 {
@@ -18,6 +20,7 @@ class AuthService
         private AuthSessionRepository $authSessionRepo,
         private UserRepository $userRepository,
         private ProfileRepository $profileRepository,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -33,7 +36,10 @@ class AuthService
 
         $this->em->persist($session);
         $this->em->flush();
-
+        
+        // Dispatch event after OTP is sent
+        $event = new OtpSentEvent($session);
+        $this->eventDispatcher->dispatch($event, OtpSentEvent::NAME);
     }
 
     public function verifyOtp(string $phone, string $code): ?User

@@ -20,6 +20,7 @@ class NotificationType
     public const string ACCOUNT_ACTIVATED = 'usr_act'; // Compte activé
     public const string PASSWORD_RESET = 'usr_pwd'; // Demande ou confirmation de réinitialisation
     public const string PROFILE_UPDATED = 'usr_upd'; // Infos de profil modifiées
+    public const string TYPE_OTP = 'usr_otp'; // One-Time Password
 
     // === NOTIFICATIONS DE SUIVI ===
     public const string DELIVERY_STATUS_UPDATED = 'ntf_dlv'; // Mise à jour de statut (push client)
@@ -58,6 +59,7 @@ class NotificationType
                 self::ACCOUNT_ACTIVATED,
                 self::PASSWORD_RESET,
                 self::PROFILE_UPDATED,
+                self::TYPE_OTP,
             ],
             'tracking' => [
                 self::DELIVERY_STATUS_UPDATED,

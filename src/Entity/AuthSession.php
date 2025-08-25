@@ -4,10 +4,12 @@ namespace App\Entity;
 
 use App\Repository\AuthSessionRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Model\RessourceInterface;
 
 #[ORM\Entity(repositoryClass: AuthSessionRepository::class)]
-class AuthSession
+class AuthSession implements RessourceInterface
 {
+    public const string EVENT_OTP_SENT = "otp_sent";
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
