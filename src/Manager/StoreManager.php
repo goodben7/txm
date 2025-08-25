@@ -5,13 +5,16 @@ namespace App\Manager;
 use App\Entity\Store;
 use App\Model\CreateStoreModel;
 use App\Model\UpdateStoreModel;
+use App\Service\ActivityEventDispatcher;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
+use App\Exception\UnauthorizedActionException;
 
 class StoreManager
 {    
     public function __construct(
-        private EntityManagerInterface $em, 
+        private EntityManagerInterface $em,
+        private ActivityEventDispatcher $eventDispatcher,
     )
     {
     }
@@ -60,6 +63,37 @@ class StoreManager
 
         $this->em->persist($store);
         $this->em->flush();
+
+        return $store;
+    }
+
+    public function validate(string $storeId, bool $isVerified = true): Store
+    {
+        $store = $this->findStore($storeId);
+
+        if ($store->getIsVerified() === $isVerified) {
+            throw new UnauthorizedActionException('this action is not allowed');
+        }
+
+        $store->setIsVerified($isVerified);
+        $store->setUpdatedAt(new \DateTimeImmutable('now'));
+
+        $customer = $store->getCustomer();
+        $customer->setIsPartner(true);
+
+        $this->em->persist($store);
+        $this->em->persist($customer);
+        
+        $this->em->flush();
+
+        if ($isVerified) {
+            $this->eventDispatcher->dispatch(
+                $store,
+                Store::EVENT_STORE_VERIFIED,
+                null,
+                null
+            );
+        }
 
         return $store;
     }

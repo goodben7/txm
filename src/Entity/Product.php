@@ -8,6 +8,7 @@ use App\Dto\CreateProductDto;
 use ApiPlatform\Metadata\Post;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Patch;
+use App\Dto\ValidateProductDto;
 use Doctrine\ORM\Mapping as ORM;
 use App\Model\RessourceInterface;
 use ApiPlatform\Metadata\ApiFilter;
@@ -15,15 +16,16 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ProductRepository;
 use App\State\CreateProductProcessor;
 use ApiPlatform\Metadata\GetCollection;
+use App\State\ValidateProductProcessor;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use Symfony\Component\HttpFoundation\File\File;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
-use Symfony\Component\HttpFoundation\File\File;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[Vich\Uploadable]
@@ -56,6 +58,12 @@ use Symfony\Component\HttpFoundation\File\File;
             inputFormats: ['multipart' => ['multipart/form-data']],
             processor: PersistProcessor::class,
             status: 200
+        ),
+        new Post(
+            uriTemplate: '/products/{id}/activations',
+            security: 'is_granted("ROLE_STORE_ACTIVATE")',
+            input: ValidateProductDto::class,
+            processor: ValidateProductProcessor::class,
         )
     ]
 )]
@@ -70,6 +78,7 @@ use Symfony\Component\HttpFoundation\File\File;
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
 class Product implements RessourceInterface
 {
+    public const string EVENT_PRODUCT_VALIDATED = 'product.validated';
     public const string ID_PREFIX = "PD";
 
     #[ORM\Id]
@@ -141,6 +150,10 @@ class Product implements RessourceInterface
 
     #[Groups(groups: ['product:get'])]
     private ?string $contentUrlSecondary;
+
+    #[Groups(groups: ['product:get'])]
+    #[ORM\Column(nullable: false, options: ['default' => false])]
+    private bool $isVerified = false;
 
     public function getId(): ?string
     {
@@ -397,6 +410,26 @@ class Product implements RessourceInterface
     public function setContentUrlSecondary(?string $contentUrlSecondary): self
     {
         $this->contentUrlSecondary = $contentUrlSecondary;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of isVerified
+     */ 
+    public function getIsVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    /**
+     * Set the value of isVerified
+     *
+     * @return  self
+     */ 
+    public function setIsVerified(?bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
 
         return $this;
     }

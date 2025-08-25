@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Dto\CreateStoreDto;
 use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
+use App\Dto\ValidateStoreDto;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,6 +14,7 @@ use ApiPlatform\Metadata\ApiFilter;
 use App\Repository\StoreRepository;
 use App\State\CreateStoreProcessor;
 use ApiPlatform\Metadata\ApiResource;
+use App\State\ValidateStoreProcessor;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use Symfony\Component\HttpFoundation\File\File;
@@ -55,6 +57,12 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
             inputFormats: ['multipart' => ['multipart/form-data']],
             processor: PersistProcessor::class,
             status: 200
+        ),
+        new Post(
+            uriTemplate: '/stores/{id}/activations',
+            security: 'is_granted("ROLE_STORE_ACTIVATE")',
+            input: ValidateStoreDto::class,
+            processor: ValidateStoreProcessor::class,
         )
     ]
 )]
@@ -69,6 +77,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
 class Store implements RessourceInterface 
 {
+    public const string EVENT_STORE_VERIFIED = 'store.verified';
     public const string ID_PREFIX = "ST";
 
     #[ORM\Id]
@@ -145,6 +154,10 @@ class Store implements RessourceInterface
 
     #[Groups(groups: ['store:get'])]
     private ?string $contentUrlSecondary;
+
+    #[Groups(groups: ['store:get'])]
+    #[ORM\Column(nullable: false, options: ['default' => false])]
+    private bool $isVerified = false;
 
     public function getId(): ?string
     {
@@ -413,6 +426,26 @@ class Store implements RessourceInterface
     public function setContentUrlSecondary(?string $contentUrlSecondary): self
     {
         $this->contentUrlSecondary = $contentUrlSecondary;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of isVerified
+     */ 
+    public function getIsVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    /**
+     * Set the value of isVerified
+     *
+     * @return  self
+     */ 
+    public function setIsVerified(?bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
 
         return $this;
     }

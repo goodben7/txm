@@ -24,7 +24,10 @@ class CreateProductModel
 
         public ?bool $active = true,
 
-        public ?string $type = null
+        public ?string $type = null,
+
+        #[Assert\NotNull()]
+        public bool $isVerified = false,
     )
     {
     }

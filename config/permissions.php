@@ -93,6 +93,7 @@ return static function (): iterable {
     yield Permission::new('ROLE_STORE_LIST', "Consulter la liste des magasins");
     yield Permission::new('ROLE_STORE_CREATE', "Créer un magasin");
     yield Permission::new('ROLE_STORE_UPDATE', "Modifier un magasin");
+    yield Permission::new('ROLE_STORE_ACTIVATE', "Activer un magasin"); 
     
     yield Permission::new('ROLE_PRODUCT_DETAILS', "Consulter les détails d'un produit");
     yield Permission::new('ROLE_PRODUCT_LIST', "Consulter la liste des produits");

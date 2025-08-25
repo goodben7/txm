@@ -30,7 +30,10 @@ class CreateProductDto
         #[Assert\NotNull]
         #[Assert\NotBlank]
         #[Assert\Choice(callback: [ProductType::class, 'getAll'], message: 'Invalid product type.')]
-        public ?string $type = null
+        public ?string $type = null,
+
+        #[Assert\NotNull()]
+        public bool $isVerified = false,
     )
     {
     }
