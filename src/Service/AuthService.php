@@ -1,0 +1,75 @@
+<?php
+
+namespace App\Service;
+
+use App\Entity\User;
+use App\Entity\AuthSession;
+use App\Model\UserProxyIntertace;
+use App\Repository\UserRepository;
+use App\Repository\ProfileRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\AuthSessionRepository;
+use App\Exception\UnavailableDataException;
+
+class AuthService
+{
+    public function __construct(
+        private EntityManagerInterface $em,
+        private AuthSessionRepository $authSessionRepo,
+        private UserRepository $userRepository,
+        private ProfileRepository $profileRepository,
+    ) {
+    }
+
+    public function sendOtp(string $phone): void
+    {
+        $otp = (string) random_int(1000, 9999);
+        $session = new AuthSession();
+        $session->setPhone($phone);
+        $session->setOtpCode($otp);
+        $session->setCreatedAt(new \DateTimeImmutable());
+        $session->setExpiresAt((new \DateTimeImmutable())->modify('+5 minutes'));
+        $session->setIsValidated(false);
+
+        $this->em->persist($session);
+        $this->em->flush();
+
+    }
+
+    public function verifyOtp(string $phone, string $code): ?User
+    {
+        $session = $this->authSessionRepo->findValidSession($phone, $code);
+
+        if (!$session) return null;
+
+        $session->setIsValidated(true);
+        $user = $this->userRepository->findOneBy(['phone' => $phone]);
+
+        if (!$user) {
+
+            $profile = $this->profileRepository->findOneBy(['personType' => UserProxyIntertace::PERSON_CUSTOMER]);
+
+            if (null === $profile) {
+                throw new UnavailableDataException('cannot find profile with person type: customer');
+            }
+
+            $user = new User();
+            $user->setPhone($phone);
+            $user->setPassword(null); // Définir le mot de passe à null pour les utilisateurs authentifiés par OTP
+            $user->setDeleted(false);
+            $user->setProfile($profile);
+            $user->setPersonType(UserProxyIntertace::PERSON_CUSTOMER);
+            $user->setCreatedAt(new \DateTimeImmutable());
+
+            $this->em->persist($user);
+
+        } elseif ($user->isDeleted()) {
+            // Si l'utilisateur est marqué comme supprimé, on déclenche une exception
+            $this->em->flush(); // Sauvegarde la session comme validée
+            throw new \App\Exception\UserAuthenticationException('This user is not active. Please contact support.');
+        }
+
+        $this->em->flush();
+        return $user;
+    }
+}

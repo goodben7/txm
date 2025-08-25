@@ -75,10 +75,14 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
     'status' => 'exact',
     'createdBy' => 'exact',
     'validatedBy' => 'exact',
-    'rejectedBy' => 'exact'
+    'rejectedBy' => 'exact',
+    'inprogressBy' => 'exact',
+    'store' => 'exact',
+    'customer' => 'exact',
+    'userId' => 'exact',
 ])]
-#[ApiFilter(OrderFilter::class, properties: ['createdAt', 'validatedAt', 'rejectedAt'])]
-#[ApiFilter(DateFilter::class, properties: ['createdAt', 'validatedAt', 'rejectedAt'])]
+#[ApiFilter(OrderFilter::class, properties: ['createdAt', 'validatedAt', 'rejectedAt', 'inprogressAt'])]
+#[ApiFilter(DateFilter::class, properties: ['createdAt', 'validatedAt', 'rejectedAt', 'inprogressAt'])]
 class Order implements RessourceInterface
 {
     public const string ID_PREFIX = "OR";
@@ -151,6 +155,20 @@ class Order implements RessourceInterface
     #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'orderReference',  cascade: ['all'])]
     #[Groups(groups: ['order:get'])]
     private Collection $orderItems;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(groups: ['order:get'])]
+    private ?Customer $customer = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(groups: ['order:get'])]
+    private ?Store $store = null;
+
+    #[ORM\Column(length: 16)]
+    #[Groups(groups: ['order:get'])]
+    private ?string $userId = null;
 
     public function __construct()
     {
@@ -316,6 +334,42 @@ class Order implements RessourceInterface
     public function setInprogressAt(?\DateTimeImmutable $inprogressAt): static
     {
         $this->inprogressAt = $inprogressAt;
+
+        return $this;
+    }
+
+    public function getCustomer(): ?Customer
+    {
+        return $this->customer;
+    }
+
+    public function setCustomer(?Customer $customer): static
+    {
+        $this->customer = $customer;
+
+        return $this;
+    }
+
+    public function getStore(): ?Store
+    {
+        return $this->store;
+    }
+
+    public function setStore(?Store $store): static
+    {
+        $this->store = $store;
+
+        return $this;
+    }
+
+    public function getUserId(): ?string
+    {
+        return $this->userId;
+    }
+
+    public function setUserId(string $userId): static
+    {
+        $this->userId = $userId;
 
         return $this;
     }

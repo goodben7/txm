@@ -19,7 +19,8 @@ class CreateOrderProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         $model = new NewOrderModel(
-            $data->orderItems
+            $data->orderItems,
+            $data->userId,
         );
  
         return $this->manager->createFrom($model); 

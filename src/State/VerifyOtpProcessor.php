@@ -2,90 +2,50 @@
 
 namespace App\State;
 
+use App\Service\AuthService;
 use ApiPlatform\Metadata\Operation;
+use App\ApiResource\Dto\OtpRequest;
 use ApiPlatform\State\ProcessorInterface;
-use App\ApiResource\VerifyOtp;
-use App\Dto\VerifyOtpDto;
-use App\Entity\OTP;
-use App\Exception\InvalidActionInputException;
-use App\Manager\OTPManager;
-use App\Repository\UserRepository;
+use App\Exception\UserAuthenticationException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-readonly class VerifyOtpProcessor implements ProcessorInterface
+class VerifyOtpProcessor implements ProcessorInterface
 {
     public function __construct(
-        private UserRepository $userRepository,
-        private OTPManager     $otpManager
-    )
-    {
-    }
+        private AuthService $authService,
+        private TokenStorageInterface $tokenStorage
+    ) {}
 
     /**
-     * Process the OTP verification
-     *
-     * @param VerifyOtpDto $data
-     * @param Operation $operation
-     * @param array $uriVariables
-     * @param array $context
-     * @return VerifyOtp
-     * @throws BadRequestHttpException
+     * @param OtpRequest $data
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): VerifyOtp
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): array
     {
-        $identifier = $data->identifier;
-        $type = $data->identifierType;
-        $code = $data->code;
-        $otpType = $data->otpType;
+        $phone = $data->getPhone();
+        $code = $data->getCode();
 
-        // Map the otpType string to the actual OTP type constant
-        $otpTypeConstant = $this->mapOtpType($otpType);
-
-        if (empty($identifier) || empty($code))
-            throw new BadRequestHttpException('Identifier and verification code are required');
-
-        if ($type === 'email')
-            $user = $this->userRepository->findOneBy(['email' => $identifier]);
-        else if ($type === 'phone')
-            $user = $this->userRepository->findOneBy(['phone' => $identifier]);
-        else
-            throw new BadRequestHttpException('Invalid identifier type');
-
-        if (!$user)
-            throw new BadRequestHttpException('User not found');
+        if (!$phone || !$code) {
+            throw new BadRequestHttpException('Phone number and OTP code are required');
+        }
 
         try {
-            $verified = $this->otpManager->verifyOTP($user, $otpTypeConstant, $code);
-
-            $response = new VerifyOtp();
-            $response->verified = $verified;
-
-            if (!$verified) {
-                $response->message = 'Invalid or expired verification code';
+            $user = $this->authService->verifyOtp($phone, $code);
+            
+            if (!$user) {
+                throw new UnauthorizedHttpException('', 'Invalid OTP code');
             }
 
-            return $response;
-        } catch (InvalidActionInputException $e) {
-            throw new BadRequestHttpException($e->getMessage());
+            // L'authentification réelle est gérée par l'OtpAuthenticator
+            // Ce processeur est appelé par API Platform mais l'authentification est interceptée par l'authenticator
+            
+            return [
+                'success' => true,
+                'message' => 'OTP verified successfully'
+            ];
+        } catch (UserAuthenticationException $e) {
+            throw new UnauthorizedHttpException('', $e->getMessage());
         }
-    }
-
-    /**
-     * Map the OTP type string to the corresponding constant
-     *
-     * @param string $otpType
-     * @return string
-     * @throws BadRequestHttpException
-     */
-    private function mapOtpType(string $otpType): string
-    {
-        return match ($otpType) {
-            'password_reset' => OTP::TYPE_PASSWORD_RESET,
-            'registration' => OTP::TYPE_REGISTRATION,
-            'login' => OTP::TYPE_LOGIN,
-            'email_change' => OTP::TYPE_EMAIL_CHANGE,
-            'phone_change' => OTP::TYPE_PHONE_CHANGE,
-            default => throw new BadRequestHttpException('Invalid OTP type')
-        };
     }
 }

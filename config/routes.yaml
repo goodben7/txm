@@ -5,3 +5,6 @@ controllers:
     type: attribute
 authentication_token:
     path: /api/authentication_token
+api_auth_verify_otp:
+    path: /api/auth/verify-otp
+    methods: ['POST']

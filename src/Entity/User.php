@@ -133,7 +133,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
     /**
      * @var string The hashed password
      */
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?string $password = null;
 
     public ?string $plainPassword;
@@ -241,7 +241,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(?string $password): static
     {
         $this->password = $password;
 
@@ -417,6 +417,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
             "ROLE_DLV_PRS" => UserProxyIntertace::PERSON_DLV_PRS,
             "ROLE_ADMIN" => UserProxyIntertace::PERSON_ADMIN,
             "ROLE_SENDER" => UserProxyIntertace::PERSON_SENDER,
+            "ROLE_CUSTOMER" => UserProxyIntertace::PERSON_CUSTOMER,
         ]);
     }
 
@@ -425,7 +426,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
         return [
             UserProxyIntertace::PERSON_SENDER,
             UserProxyIntertace::PERSON_DLV_PRS,
-            UserProxyIntertace::PERSON_ADMIN
+            UserProxyIntertace::PERSON_ADMIN,
+            UserProxyIntertace::PERSON_CUSTOMER
         ];
     }
 
@@ -435,6 +437,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
             "Expéditeur" => UserProxyIntertace::PERSON_SENDER,
             "Livreur" => UserProxyIntertace::PERSON_DLV_PRS,
             "Admin" => UserProxyIntertace::PERSON_ADMIN,
+            "Client" => UserProxyIntertace::PERSON_CUSTOMER,
         ];
     }
 

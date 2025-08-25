@@ -13,6 +13,10 @@ class CreateOrderDto
         /** @var array<\App\Entity\OrderItem> */
         public array $orderItems = [],
 
+        #[Assert\NotNull]
+        #[Assert\NotBlank]
+        public ?string $userId = null,
+
     )
     {
     }

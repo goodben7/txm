@@ -40,14 +40,31 @@ class OrderManager
         $order->setStatus(Order::STATUS_PENDING);
         $order->setCreatedAt(new \DateTimeImmutable('now'));
         $order->setCreatedBy($user->getId());
+        $order->setUserId($model->userId);
         
         $totalPrice = 0;
+        $store = null;
+        $customer = null;
         
-        foreach ($model->orderItems as $item) {
+        foreach ($model->orderItems as $index => $item) {
+            // Vérifier que tous les produits proviennent du même magasin
+            $currentStore = $item->getProduct()->getStore();
+            
+            if ($index === 0) {
+                // Premier produit, on initialise le magasin de référence
+                $store = $currentStore;
+                $customer = $currentStore->getCustomer();
+            } else if ($store !== null && $currentStore->getId() !== $store->getId()) {
+                // Si un produit provient d'un magasin différent, on lance une exception
+                throw new InvalidActionInputException('All products in an order must come from the same store');
+            }
+            
             $order->addOrderItem($item);
             $totalPrice += (float)$item->getUnitPrice() * $item->getQuantity();
         }
         
+        $order->setCustomer($customer);
+        $order->setStore($store);
         $order->setTotalPrice((string)$totalPrice);
         
         try {
