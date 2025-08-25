@@ -98,4 +98,11 @@ return static function (): iterable {
     yield Permission::new('ROLE_PRODUCT_LIST', "Consulter la liste des produits");
     yield Permission::new('ROLE_PRODUCT_CREATE', "Créer un produit");
     yield Permission::new('ROLE_PRODUCT_UPDATE', "Modifier un produit");
+    
+    yield Permission::new('ROLE_ORDER_DETAILS', "Consulter les détails d'une commande");
+    yield Permission::new('ROLE_ORDER_LIST', "Consulter la liste des commandes");
+    yield Permission::new('ROLE_ORDER_CREATE', "Créer une commande");
+    yield Permission::new('ROLE_ORDER_VALIDATION', "Valider une commande");
+    yield Permission::new('ROLE_ORDER_REJECT', "Refuser une commande");
+    yield Permission::new('ROLE_ORDER_INPROGRESS', "Mettre une commande en cours");
 };

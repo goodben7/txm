@@ -18,6 +18,8 @@ security:
             pattern: ^/api/
             stateless: true
             provider: app_user_provider
+            custom_authenticators:
+                - App\Security\OtpAuthenticator
             json_login:
                 check_path: /api/authentication_token
                 username_path: username
