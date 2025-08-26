@@ -64,7 +64,6 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 #[ApiFilter(SearchFilter::class, properties: [
     'id' => 'exact',
     'name' => 'ipartial',
-    'type' => 'exact',
     'active' => 'exact'
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
@@ -89,13 +88,6 @@ class Service implements RessourceInterface
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['service:get', 'service:post', 'service:patch'])]
     private ?string $description = null;
-
-    #[ORM\Column(length: 15)]
-    #[Assert\NotBlank()]
-    #[Assert\NotNull()]
-    #[Assert\Choice(callback: [ServiceType::class, 'getAll'], message: 'Invalid service type.')]
-    #[Groups(['service:get',  'service:post', 'service:patch'])]
-    private ?string $type = null;
 
     #[ORM\Column]
     #[Assert\NotNull()]
@@ -177,18 +169,6 @@ class Service implements RessourceInterface
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
-    public function setType(string $type): static
-    {
-        $this->type = $type;
 
         return $this;
     }

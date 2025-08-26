@@ -5,7 +5,6 @@ namespace App\Command;
 use App\Entity\Customer;
 use App\Entity\Service;
 use App\Entity\Store;
-use App\Enum\ServiceType;
 use App\Event\ActivityEvent;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -46,7 +45,6 @@ class TestStoreVerificationCommand extends Command
         // Création d'un service de test
         $service = new Service();
         $service->setName('Service de Test');
-        $service->setType(ServiceType::GROCERY);
         $service->setActive(true);
 
         // Création d'une boutique de test
