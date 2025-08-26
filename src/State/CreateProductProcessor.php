@@ -27,7 +27,8 @@ class CreateProductProcessor implements ProcessorInterface
             $data->store, 
             $data->active, 
             $data->type,
-            $data->isVerified
+            $data->isVerified,
+            $data->currency
         );
  
         return $this->manager->createFrom($model); 

@@ -29,6 +29,7 @@ class ProductManager
         $product->setActive($model->active);
         $product->setType($model->type);
         $product->setIsVerified($model->isVerified);
+        $product->setCurrency($model->currency);
         $product->setCreatedAt(new \DateTimeImmutable());
        
         $this->em->persist($product);

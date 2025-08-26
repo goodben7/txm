@@ -28,6 +28,9 @@ class CreateProductModel
 
         #[Assert\NotNull()]
         public bool $isVerified = false,
+
+        #[Assert\Currency]
+        public ?string $currency = null,
     )
     {
     }

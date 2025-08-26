@@ -73,6 +73,7 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'type' => 'exact',
     'active' => 'exact',
     'store' => 'exact',
+    'currency' => 'exact'
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
@@ -154,6 +155,10 @@ class Product implements RessourceInterface
     #[Groups(groups: ['product:get'])]
     #[ORM\Column(nullable: false, options: ['default' => false])]
     private bool $isVerified = false;
+
+    #[ORM\Column(length: 3, nullable: true)]
+    #[Groups(groups: ['product:get'])]
+    private ?string $currency = null;
 
     public function getId(): ?string
     {
@@ -430,6 +435,18 @@ class Product implements RessourceInterface
     public function setIsVerified(?bool $isVerified): static
     {
         $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function getCurrency(): ?string
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(?string $currency): static
+    {
+        $this->currency = $currency;
 
         return $this;
     }
