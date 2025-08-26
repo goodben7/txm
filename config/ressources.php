@@ -13,6 +13,7 @@ use App\Entity\Delivery;
 use App\Entity\Document;
 use App\Model\Ressource;
 use App\Entity\Recipient;
+use App\Entity\ProductType;
 use App\Entity\Notification;
 use App\Entity\DeliveryModel;
 use App\Entity\DeliveryPerson;
@@ -32,4 +33,5 @@ return static function (): iterable {
     yield Ressource::new("store", Store::class, "ST", true);
     yield Ressource::new("product", Product::class, "PD", true);
     yield Ressource::new("order", Order::class, "OR", true);
+    yield Ressource::new("produc_type", ProductType::class, "PT", true);
 };

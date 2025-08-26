@@ -100,6 +100,12 @@ return static function (): iterable {
     yield Permission::new('ROLE_PRODUCT_CREATE', "Créer un produit");
     yield Permission::new('ROLE_PRODUCT_UPDATE', "Modifier un produit");
     
+    yield Permission::new('ROLE_PRODUCT_TYPE_DETAILS', "Consulter les détails d'un type de produit");
+    yield Permission::new('ROLE_PRODUCT_TYPE_LIST', "Consulter la liste des types de produit");
+    yield Permission::new('ROLE_PRODUCT_TYPE_CREATE', "Créer un type de produit");
+    yield Permission::new('ROLE_PRODUCT_TYPE_UPDATE', "Modifier un type de produit");
+    yield Permission::new('ROLE_PRODUCT_TYPE_DELETE', "Supprimer un type de produit");
+    
     yield Permission::new('ROLE_ORDER_DETAILS', "Consulter les détails d'une commande");
     yield Permission::new('ROLE_ORDER_LIST', "Consulter la liste des commandes");
     yield Permission::new('ROLE_ORDER_CREATE', "Créer une commande");

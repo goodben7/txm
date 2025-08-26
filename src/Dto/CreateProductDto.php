@@ -3,7 +3,7 @@
 namespace App\Dto;
 
 use App\Entity\Store;
-use App\Enum\ProductType;
+use App\Entity\ProductType;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class CreateProductDto
@@ -29,8 +29,7 @@ class CreateProductDto
 
         #[Assert\NotNull]
         #[Assert\NotBlank]
-        #[Assert\Choice(callback: [ProductType::class, 'getAll'], message: 'Invalid product type.')]
-        public ?string $type = null,
+        public ?ProductType $type = null,
 
         #[Assert\NotNull()]
         public bool $isVerified = false,

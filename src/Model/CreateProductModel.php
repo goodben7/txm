@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use App\Entity\Store;
+use App\Entity\ProductType;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class CreateProductModel
@@ -24,7 +25,9 @@ class CreateProductModel
 
         public ?bool $active = true,
 
-        public ?string $type = null,
+        #[Assert\NotNull]
+        #[Assert\NotBlank]
+        public ?ProductType $type = null,
 
         #[Assert\NotNull()]
         public bool $isVerified = false,

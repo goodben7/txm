@@ -110,10 +110,6 @@ class Product implements RessourceInterface
     #[Groups(['product:get', 'product:patch'])]
     private ?bool $active = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['product:get', 'product:patch'])]
-    private ?string $type = null;
-
     #[ORM\Column]
     #[Groups(['product:get'])]
     private ?\DateTimeImmutable $createdAt = null;
@@ -159,6 +155,11 @@ class Product implements RessourceInterface
     #[ORM\Column(length: 3, nullable: true)]
     #[Groups(groups: ['product:get'])]
     private ?string $currency = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['product:get', 'product:patch'])]
+    private ?ProductType $type = null;
 
     public function getId(): ?string
     {
@@ -221,18 +222,6 @@ class Product implements RessourceInterface
     public function setActive(bool $active): static
     {
         $this->active = $active;
-
-        return $this;
-    }
-
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
-    public function setType(?string $type): static
-    {
-        $this->type = $type;
 
         return $this;
     }
@@ -447,6 +436,18 @@ class Product implements RessourceInterface
     public function setCurrency(?string $currency): static
     {
         $this->currency = $currency;
+
+        return $this;
+    }
+
+    public function getType(): ?ProductType
+    {
+        return $this->type;
+    }
+
+    public function setType(?ProductType $type): static
+    {
+        $this->type = $type;
 
         return $this;
     }
