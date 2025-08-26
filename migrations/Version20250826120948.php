@@ -21,9 +21,6 @@ final class Version20250826120948 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE product ADD type_id VARCHAR(16) DEFAULT NULL
-        SQL);
-        $this->addSql(<<<'SQL'
             ALTER TABLE product ADD CONSTRAINT FK_D34A04ADC54C8C93 FOREIGN KEY (type_id) REFERENCES product_type (id)
         SQL);
         $this->addSql(<<<'SQL'
@@ -39,9 +36,6 @@ final class Version20250826120948 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP INDEX IDX_D34A04ADC54C8C93 ON product
-        SQL);
-        $this->addSql(<<<'SQL'
-            ALTER TABLE product DROP type_id
         SQL);
     }
 }
