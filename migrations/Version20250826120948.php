@@ -15,17 +15,12 @@ final class Version20250826120948 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // 1. Ajoute la colonne `type_id` si elle n'existe pas déjà
-        $this->addSql(<<<'SQL'
-            ALTER TABLE product ADD type_id VARCHAR(16) DEFAULT NULL AFTER type
-        SQL);
-
-        // 2. Ajoute la contrainte de clé étrangère
+        // 1. Ajoute uniquement la contrainte de clé étrangère (la colonne type_id existe déjà)
         $this->addSql(<<<'SQL'
             ALTER TABLE product ADD CONSTRAINT FK_D34A04ADC54C8C93 FOREIGN KEY (type_id) REFERENCES product_type (id)
         SQL);
 
-        // 3. Ajoute un index pour optimiser les jointures (optionnel mais recommandé)
+        // 2. Ajoute un index pour optimiser les jointures (optionnel mais recommandé)
         $this->addSql(<<<'SQL'
             CREATE INDEX IDX_D34A04ADC54C8C93 ON product (type_id)
         SQL);
@@ -39,9 +34,6 @@ final class Version20250826120948 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP INDEX IDX_D34A04ADC54C8C93 ON product
-        SQL);
-        $this->addSql(<<<'SQL'
-            ALTER TABLE product DROP COLUMN type_id
         SQL);
     }
 }
