@@ -73,7 +73,8 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'type' => 'exact',
     'active' => 'exact',
     'store' => 'exact',
-    'currency' => 'exact'
+    'currency' => 'exact',
+    'isVerified' => 'exact'
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]

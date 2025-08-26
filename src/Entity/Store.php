@@ -71,7 +71,8 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'label' => 'ipartial',
     'active' => 'exact',
     'service' => 'exact',
-    'customer' => 'exact'
+    'customer' => 'exact',
+    'isVerified' => 'exact'
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
