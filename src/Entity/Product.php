@@ -157,7 +157,7 @@ class Product implements RessourceInterface
     private ?string $currency = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(['product:get', 'product:patch'])]
     private ?ProductType $type = null;
 
