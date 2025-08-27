@@ -41,6 +41,7 @@ class OrderManager
         $order->setCreatedAt(new \DateTimeImmutable('now'));
         $order->setCreatedBy($user->getId());
         $order->setUserId($model->userId);
+        $order->setDeliveryAddress($model->deliveryAddress);
         
         $totalPrice = 0;
         $store = null;

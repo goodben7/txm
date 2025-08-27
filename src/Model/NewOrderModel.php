@@ -2,6 +2,7 @@
 
 namespace App\Model;
 
+use App\Entity\Address;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class NewOrderModel
@@ -17,6 +18,7 @@ class NewOrderModel
         #[Assert\NotBlank]
         public ?string $userId = null,
 
+        public ?Address $deliveryAddress = null,
     )
     {
     }

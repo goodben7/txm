@@ -99,9 +99,6 @@ class Order implements RessourceInterface
     public const string EVENT_ORDER_REJECTED = "order_rejected";
     public const string EVENT_ORDER_INPROGRESS = "order_inprogress";
 
-
-
-
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(IdGenerator::class)]
@@ -170,6 +167,20 @@ class Order implements RessourceInterface
     #[Groups(groups: ['order:get'])]
     private ?string $userId = null;
 
+    #[ORM\ManyToOne()]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(groups: ['order:get'])]
+    private ?Address $pickupAddress = null;
+
+    #[ORM\ManyToOne()]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(groups: ['order:get'])]
+    private ?Address $deliveryAddress = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(groups: ['order:get'])]
+    private ?string $description = null;
+    
     public function __construct()
     {
         $this->orderItems = new ArrayCollection();
@@ -370,6 +381,58 @@ class Order implements RessourceInterface
     public function setUserId(string $userId): static
     {
         $this->userId = $userId;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of pickupAddress
+     */ 
+    public function getPickupAddress(): Address|null
+    {
+        return $this->pickupAddress;
+    }
+
+    /**
+     * Set the value of pickupAddress
+     *
+     * @return  self
+     */ 
+    public function setPickupAddress(?Address $pickupAddress): static
+    {
+        $this->pickupAddress = $pickupAddress;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of deliveryAddress
+     */ 
+    public function getDeliveryAddress(): Address|null
+    {
+        return $this->deliveryAddress;
+    }
+
+    /**
+     * Set the value of deliveryAddress
+     *
+     * @return  self
+     */ 
+    public function setDeliveryAddress(?Address $deliveryAddress): static
+    {
+        $this->deliveryAddress = $deliveryAddress;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
 
         return $this;
     }
