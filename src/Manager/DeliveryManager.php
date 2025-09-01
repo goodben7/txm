@@ -3,6 +3,7 @@
 namespace App\Manager;
 
 use App\Entity\User;
+use App\Entity\Order;
 use App\Entity\Delivery;
 use App\Entity\DeliveryPerson;
 use App\Model\NewDeliveryModel;
@@ -28,42 +29,69 @@ class DeliveryManager
     {
     }
 
-    public function createFrom(NewDeliveryModel $model): Delivery {
+    public function createFrom(NewDeliveryModel $model, bool $isOrder = true): Delivery {
+        try {
+            $userId = $this->security->getUser() ? $this->security->getUser()->getUserIdentifier() : null;
 
-        $userId = $this->security->getUser() ? $this->security->getUser()->getUserIdentifier() : null;
+            /** @var User $user */
+            $user = $this->queries->ask(new GetUserDetails($userId));
+            
+            $d = new Delivery();
 
-        /** @var User $user */
-        $user = $this->queries->ask(new GetUserDetails($userId));
-        
-        $d = new Delivery();
+            $d->setType($model->type);
+            $d->setDescription($model->description);
+            $d->setDeliveryDate($model->deliveryDate);
+            $d->setRecipient($model->recipient);
+            $d->setCustomer($model->customer);
+            $d->setCreatedAt(new \DateTimeImmutable('now'));
+            $d->setCreatedBy($user ? $user->getId() : 'SYSTEM');
+            $d->setPickupAddress($model->pickupAddress);
+            $d->setDeliveryAddress($model->deliveryAddress);
+            $d->setAdditionalInformation($model->additionalInformation);
+            $d->setTrackingNumber($this->generateTrackingNumber($model->type, $model->deliveryDate));
+            $d->setTownship($model->deliveryAddress ? $model->deliveryAddress->getTownship()?->getId() : null);
+            $d->setZone($model->deliveryAddress ? $model->deliveryAddress->getTownship()?->getZone()?->getId() : null);
+            $d->setCreatedFrom($model->createdFrom);
+            $d->setCreatedByTypePerson($user ? $user?->getPersonType() : null);
+            
+            if ($isOrder) {
+                $order = new Order();
 
-        $d->setType($model->type);
-        $d->setDescription($model->description);
-        $d->setDeliveryDate($model->deliveryDate);
-        $d->setRecipient($model->recipient);
-        $d->setCustomer($model->customer);
-        $d->setCreatedAt(new \DateTimeImmutable('now'));
-        $d->setCreatedBy($user ? $user->getId() : 'SYSTEM');
-        $d->setPickupAddress($model->pickupAddress);
-        $d->setDeliveryAddress($model->deliveryAddress);
-        $d->setAdditionalInformation($model->additionalInformation);
-        $d->setTrackingNumber($this->generateTrackingNumber($model->type, $model->deliveryDate));
-        $d->setTownship($model->deliveryAddress ? $model->deliveryAddress->getTownship()?->getId() : null);
-        $d->setZone($model->deliveryAddress ? $model->deliveryAddress->getTownship()?->getZone()?->getId() : null);
-        $d->setCreatedFrom($model->createdFrom);
-        $d->setCreatedByTypePerson($user ? $user?->getPersonType() : null);
-        
-        $this->em->persist($d);
-        $this->em->flush();
+                $order->setCreatedAt(new \DateTimeImmutable('now'));
+                $order->setCreatedBy($user? $user->getId() : 'SYSTEM');
+                $order->setStatus(Order::STATUS_COMPLETED);
+                $order->setCustomer($model->customer);
 
-        $this->eventDispatcher->dispatch(
-            $d, 
-            Delivery::EVENT_DELIVERY_CREATED, 
-            null, 
-            null)
-        ;
-        
-        return $d;
+                $store = $model->customer->getStores()->count() > 0 ? $model->customer->getStores()->first() : null;
+                $order->setStore($store);
+
+                $order->setTotalPrice('0.00');
+                $order->setUserId($model->recipient->getUserId() !== null ? $model->recipient->getUserId() : null);
+                $order->setPickupAddress($model->pickupAddress);
+                $order->setDeliveryAddress($model->deliveryAddress);
+                $order->setDescription($model->description);
+                
+                $d->setRelatedOrder($order);
+                $order->setDelivery($d);
+                
+                $this->em->persist($order);
+            }
+            
+            $this->em->persist($d);
+            $this->em->flush();
+
+            $this->eventDispatcher->dispatch(
+                $d, 
+                Delivery::EVENT_DELIVERY_CREATED, 
+                null, 
+                null)
+            ;
+            
+            return $d;
+
+        } catch (\Exception $e) {
+            throw new InvalidActionInputException('Error creating delivery : ' . $e->getMessage());
+        }
     }
 
     public function updateFrom(UpdateDeliveryModel $model, string $deliveryId): Delivery {

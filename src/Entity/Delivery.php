@@ -136,6 +136,7 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
     'createdByTypePerson' => 'exact',
     'deliveryPerson' => 'exact',
     'deliveryPerson.fullname' => 'ipartial',
+    'relatedOrder' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt', 'reassignedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt', 'reassignedAt'])]
@@ -316,6 +317,10 @@ class Delivery implements RessourceInterface
     #[ORM\Column(nullable: true)]
     #[Groups(groups: ['delivery:get'])]
     private ?\DateTimeImmutable $reassignedAt = null;
+
+    #[ORM\OneToOne(mappedBy: 'delivery', cascade: ['persist', 'remove'])]
+    #[Groups(groups: ['delivery:get'])]
+    private ?Order $relatedOrder = null;
 
     public function getId(): ?string
     {
@@ -748,6 +753,28 @@ class Delivery implements RessourceInterface
     public function setReassignedAt(?\DateTimeImmutable $reassignedAt)
     {
         $this->reassignedAt = $reassignedAt;
+
+        return $this;
+    }
+
+    public function getRelatedOrder(): ?Order
+    {
+        return $this->relatedOrder;
+    }
+
+    public function setRelatedOrder(?Order $relatedOrder): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($relatedOrder === null && $this->relatedOrder !== null) {
+            $this->relatedOrder->setDelivery(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($relatedOrder !== null && $relatedOrder->getDelivery() !== $this) {
+            $relatedOrder->setDelivery($this);
+        }
+
+        $this->relatedOrder = $relatedOrder;
 
         return $this;
     }

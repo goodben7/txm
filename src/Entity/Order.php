@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Dto\CreateOrderDto;
+use App\Dto\FinishOrderDto;
 use App\Dto\RejectOrderDto;
 use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
@@ -16,6 +17,7 @@ use App\State\RejectOrdeProcessor;
 use ApiPlatform\Metadata\ApiFilter;
 use App\Repository\OrderRepository;
 use App\State\CreateOrderProcessor;
+use App\State\FinishOrderProcessor;
 use ApiPlatform\Metadata\ApiResource;
 use App\State\ValidateOrderProcessor;
 use ApiPlatform\Metadata\GetCollection;
@@ -68,6 +70,13 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
             processor: InprogressOrderProcessor::class,
             status: 200
         ),
+        new Post(
+            uriTemplate: '/orders/finish',
+            security: 'is_granted("ROLE_ORDER_FINISH")',
+            input: FinishOrderDto::class,
+            processor: FinishOrderProcessor::class,
+            status: 200
+        ),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
@@ -80,6 +89,7 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
     'store' => 'exact',
     'customer' => 'exact',
     'userId' => 'exact',
+    'delivery' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'validatedAt', 'rejectedAt', 'inprogressAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'validatedAt', 'rejectedAt', 'inprogressAt'])]
@@ -98,6 +108,7 @@ class Order implements RessourceInterface
     public const string EVENT_ORDER_CREATED = "order_created";
     public const string EVENT_ORDER_REJECTED = "order_rejected";
     public const string EVENT_ORDER_INPROGRESS = "order_inprogress";
+    public const string EVENT_ORDER_TERMINATED = "order_terminated";
 
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
@@ -159,11 +170,11 @@ class Order implements RessourceInterface
     private ?Customer $customer = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(groups: ['order:get'])]
     private ?Store $store = null;
 
-    #[ORM\Column(length: 16)]
+    #[ORM\Column(length: 16, nullable:true)]
     #[Groups(groups: ['order:get'])]
     private ?string $userId = null;
 
@@ -180,6 +191,18 @@ class Order implements RessourceInterface
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(groups: ['order:get'])]
     private ?string $description = null;
+
+    #[ORM\OneToOne(inversedBy: 'relatedOrder', cascade: ['persist', 'remove'])]
+    #[Groups(groups: ['order:get'])]
+    private ?Delivery $delivery = null;
+
+    #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(groups: ['order:get'])]
+    private ?string $terminedBy = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(groups: ['order:get'])]
+    private ?\DateTimeImmutable $terminedAt = null;
     
     public function __construct()
     {
@@ -378,7 +401,7 @@ class Order implements RessourceInterface
         return $this->userId;
     }
 
-    public function setUserId(string $userId): static
+    public function setUserId(?string $userId): static
     {
         $this->userId = $userId;
 
@@ -433,6 +456,42 @@ class Order implements RessourceInterface
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getDelivery(): ?Delivery
+    {
+        return $this->delivery;
+    }
+
+    public function setDelivery(?Delivery $delivery): static
+    {
+        $this->delivery = $delivery;
+
+        return $this;
+    }
+
+    public function getTerminedBy(): ?string
+    {
+        return $this->terminedBy;
+    }
+
+    public function setTerminedBy(?string $terminedBy): static
+    {
+        $this->terminedBy = $terminedBy;
+
+        return $this;
+    }
+
+    public function getTerminedAt(): ?\DateTimeImmutable
+    {
+        return $this->terminedAt;
+    }
+
+    public function setTerminedAt(?\DateTimeImmutable $terminedAt): static
+    {
+        $this->terminedAt = $terminedAt;
 
         return $this;
     }

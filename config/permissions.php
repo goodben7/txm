@@ -112,4 +112,5 @@ return static function (): iterable {
     yield Permission::new('ROLE_ORDER_VALIDATION', "Valider une commande");
     yield Permission::new('ROLE_ORDER_REJECT', "Refuser une commande");
     yield Permission::new('ROLE_ORDER_INPROGRESS', "Mettre une commande en cours");
+    yield Permission::new('ROLE_ORDER_FINISH', "Finaliser une commande"); 
 };
