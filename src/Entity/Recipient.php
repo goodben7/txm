@@ -137,7 +137,7 @@ class Recipient implements RessourceInterface
     private ?RecipientType $recipientType = null;
 
     #[ORM\Column(length: 16, nullable: true)]
-    #[Groups(groups: ['customer:get'])]
+    #[Groups(groups: ['recipient:get'])]
     private ?string $userId = null;
 
     public function __construct()

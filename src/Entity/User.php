@@ -174,6 +174,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
     #[ORM\Column(length: 16, nullable: true)]
     #[Groups(['user:get'])]
     private ?string $holderId = null;
+
+    #[ORM\Column(length: 6, nullable: true)]
+    #[Groups(['user:get'])]
+    private ?string $code = null;
     
     public function getId(): ?string
     {
@@ -467,6 +471,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
     public function setHolderId(?string $holderId): static
     {
         $this->holderId = $holderId;
+
+        return $this;
+    }
+
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(?string $code): static
+    {
+        $this->code = $code;
 
         return $this;
     }
