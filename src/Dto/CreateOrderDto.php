@@ -2,6 +2,7 @@
 
 namespace App\Dto;
 
+use App\Entity\Address;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class CreateOrderDto
@@ -16,6 +17,8 @@ class CreateOrderDto
         #[Assert\NotNull]
         #[Assert\NotBlank]
         public ?string $userId = null,
+
+        public ?Address $deliveryAddress = null,
 
     )
     {

@@ -2,10 +2,14 @@
 
 namespace App\Manager;
 
-use App\Entity\Order;
 use App\Entity\User;
+use App\Entity\Order;
+use App\Entity\Address;
+use App\Entity\Recipient;
 use App\Model\NewOrderModel;
+use App\Model\NewDeliveryModel;
 use App\Repository\UserRepository;
+use App\Repository\RecipientRepository;
 use App\Service\ActivityEventDispatcher;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
@@ -18,7 +22,9 @@ class OrderManager
         private EntityManagerInterface $em,
         private Security $security,
         private UserRepository $userRepository,
+        private RecipientRepository $recipientRepository,
         private ActivityEventDispatcher $eventDispatcher,
+        private DeliveryManager $deliveryManager
     ){
     }
     
@@ -41,6 +47,7 @@ class OrderManager
         $order->setCreatedAt(new \DateTimeImmutable('now'));
         $order->setCreatedBy($user->getId());
         $order->setUserId($model->userId);
+        $order->setDeliveryAddress($model->deliveryAddress);
         
         $totalPrice = 0;
         $store = null;
@@ -188,5 +195,89 @@ class OrderManager
         );
 
         return $order; 
+    }
+
+    /**
+     * Finish an order and mark it as completed
+     * @param Order $order The order to finish
+     * @param Address|null $pickupAddress Optional pickup address to set
+     * @param string|null $description Optional description to set
+     * @throws InvalidActionInputException If the order status is not valid for finishing
+     * @return Order The completed order
+     */
+    public function finish(Order $order, string $type, ?\DateTimeImmutable $deliveryDate, ?Address $pickupAddress = null, ?string $description = null, ?string $createdFrom = null) : Order
+    {
+        if($order->getStatus() != Order::STATUS_IN_PROGRESS){
+            throw new InvalidActionInputException('Action not allowed : invalid order state'); 
+        }
+
+        try {
+            $recipient = $this->recipientRepository->findOneByUserIdAndCustomer($order->getUserId(), $order->getCustomer());
+            
+            if ($recipient === null) {
+
+                /** @var User|null $user */
+                $user = $this->userRepository->findOneBy(['id' => $order->getUserId()]);
+
+                if ($user === null) {
+                    throw new InvalidActionInputException('User not found');
+                }
+                else {
+
+                    $recipient = new Recipient();
+                    $recipient->setUserId($order->getUserId());
+                    $recipient->setCustomer($order->getCustomer());
+                    $recipient->setFullname($user->getDisplayName());
+                    $recipient->setPhone($user->getPhone());
+                    $recipient->setEmail($user->getEmail());
+                    $recipient->setCreatedAt(new \DateTimeImmutable('now'));
+
+                    $this->em->persist($recipient);
+                    $this->em->flush();
+                }
+
+            }
+
+            $model = new NewDeliveryModel(
+                $type, 
+                $description, 
+                $deliveryDate, 
+                $recipient, 
+                $order->getCustomer(),
+                $pickupAddress,
+                $order->getDeliveryAddress(),
+                $description,
+                $createdFrom
+            );
+
+            $delivery = $this->deliveryManager->createFrom($model, false);
+            $order->setDelivery($delivery);
+        
+            $identifier = $this->security->getUser()->getUserIdentifier();
+
+            /** @var User|null $user */
+            $user = $this->userRepository->findByEmailOrPhone($identifier);
+
+            $order->setStatus(Order::STATUS_COMPLETED);
+            $order->setTerminedAt(new \DateTimeImmutable('now'));
+            $order->setTerminedBy($user->getId());
+            $order->setPickupAddress($pickupAddress);
+            $order->setDescription($description);
+
+            $this->em->persist($order);
+            $this->em->flush();
+
+
+            $this->eventDispatcher->dispatch(
+                $order, 
+                Order::EVENT_ORDER_TERMINATED, 
+                null, 
+                null
+            );
+
+            return $order;
+        } catch (\Exception $e) {
+            throw new UnavailableDataException('Error while finishing order: ' . $e->getMessage());
+        }
     }
 }
