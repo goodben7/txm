@@ -6,6 +6,7 @@ use App\Entity\Customer;
 use App\Model\NewCustomerModel;
 use App\Model\UserProxyIntertace;
 use App\Repository\ProfileRepository;
+use App\Service\CodeGeneratorService;
 use App\Service\ActivityEventDispatcher;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Message\Command\CreateUserCommand;
@@ -20,6 +21,7 @@ class CustomerManager
         private CommandBusInterface $bus,
         private ProfileRepository $profileRepository,
         private ActivityEventDispatcher $eventDispatcher,
+        private CodeGeneratorService $codeGeneratorService
     )
     {
     }
@@ -32,6 +34,12 @@ class CustomerManager
      */
     public function createFrom(NewCustomerModel $model): Customer {
 
+        $code = $this->codeGeneratorService->generateCode('Customer', UserProxyIntertace::PERSON_SENDER);
+                
+        if ($this->codeGeneratorService->codeExists($code)) {
+            throw new UnavailableDataException('code already exists');
+        }
+
         $customer = new Customer();
     
         $customer->setCompanyName($model->companyName);
@@ -41,6 +49,7 @@ class CustomerManager
         $customer->setEmail($model->email);
         $customer->setIsPartner($model->isPartner);
         $customer->setCreatedAt(new \DateTimeImmutable('now'));
+        $customer->setCode($code);
 
         foreach ($model->addresses as $addr) {
             $customer->addAddress($addr);
@@ -67,6 +76,7 @@ class CustomerManager
                 $customer->getPhone(),
                 $customer->getFullname(),
                 $customer->getId(),
+                $customer->getCode(),
             )
         );
 
