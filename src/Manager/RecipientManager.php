@@ -12,6 +12,7 @@ use App\Service\ActivityEventDispatcher;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
 use App\Exception\UnauthorizedActionException;
+use App\Service\CodeGeneratorService;
 
 class RecipientManager
 {
@@ -20,6 +21,7 @@ class RecipientManager
         private ActivityEventDispatcher $eventDispatcher,
         private ProfileRepository $profileRepository,
         private UserRepository $userRepository,
+        private CodeGeneratorService $codeGeneratorService
     )
     {
     }
@@ -56,16 +58,28 @@ class RecipientManager
         $user = $this->userRepository->findOneBy(['phone' => $model->phone]);
 
         if (null === $user) {
-            $user = new User();
-            $user->setPhone($model->phone);
-            $user->setPassword(null); // Définir le mot de passe à null pour les utilisateurs authentifiés par OTP
-            $user->setDeleted(false);
-            $user->setEmail($model->email);
-            $user->setProfile($profile);
-            $user->setDisplayName($model->fullname);
-            $user->setPersonType(UserProxyIntertace::PERSON_CUSTOMER);
-            $user->setCreatedAt(new \DateTimeImmutable());
-            $user->setHolderId($r->getId());
+
+            try {
+                $code = $this->codeGeneratorService->generateCode('Recipient', UserProxyIntertace::PERSON_CUSTOMER);
+                
+                if ($this->codeGeneratorService->codeExists($code)) {
+                    throw new UnavailableDataException('code already exists');
+                }
+
+                $user = new User();
+                $user->setPhone($model->phone);
+                $user->setPassword(null); // Définir le mot de passe à null pour les utilisateurs authentifiés par OTP
+                $user->setDeleted(false);
+                $user->setEmail($model->email);
+                $user->setProfile($profile);
+                $user->setDisplayName($model->fullname);
+                $user->setPersonType(UserProxyIntertace::PERSON_CUSTOMER);
+                $user->setCreatedAt(new \DateTimeImmutable());
+                $user->setHolderId($r->getId());
+                $user->setCode($code);
+            } catch (\Exception $e) {
+                throw new UnavailableDataException('Erreur lors de la génération du code ou de la création de l\'utilisateur: ' . $e->getMessage());
+            }
         } else {
             $user->setEmail($model->email);
             $user->setDisplayName($model->fullname);

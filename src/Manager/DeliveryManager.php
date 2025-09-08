@@ -72,10 +72,13 @@ class DeliveryManager
                 $order->setDescription($model->description);
                 
                 $d->setRelatedOrder($order);
+                $d->setStoreId($store?->getId());
                 $order->setDelivery($d);
                 
                 $this->em->persist($order);
             }
+            
+            $d->setStoreId($model->storeId);
             
             $this->em->persist($d);
             $this->em->flush();

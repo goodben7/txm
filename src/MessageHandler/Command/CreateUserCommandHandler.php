@@ -32,7 +32,8 @@ class CreateUserCommandHandler implements CommandHandlerInterface
                 $command->profile, 
                 $command->phone, 
                 $command->displayName,
-                $command->holderId
+                $command->holderId,
+                $command->code
             );
 
             return $this->manager->createFrom($model);

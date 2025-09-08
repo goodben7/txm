@@ -21,6 +21,7 @@ class AuthService
         private UserRepository $userRepository,
         private ProfileRepository $profileRepository,
         private EventDispatcherInterface $eventDispatcher,
+        private CodeGeneratorService $codeGeneratorService
     ) {
     }
 
@@ -44,38 +45,56 @@ class AuthService
 
     public function verifyOtp(string $phone, string $code): ?User
     {
-        $session = $this->authSessionRepo->findValidSession($phone, $code);
+        try {
+            $session = $this->authSessionRepo->findValidSession($phone, $code);
 
-        if (!$session) return null;
+            if (!$session) return null;
 
-        $session->setIsValidated(true);
-        $user = $this->userRepository->findOneBy(['phone' => $phone]);
+            $session->setIsValidated(true);
+            $user = $this->userRepository->findOneBy(['phone' => $phone]);
 
-        if (!$user) {
+            if (!$user) {
+                try {
+                    $profile = $this->profileRepository->findOneBy(['personType' => UserProxyIntertace::PERSON_CUSTOMER]);
 
-            $profile = $this->profileRepository->findOneBy(['personType' => UserProxyIntertace::PERSON_CUSTOMER]);
+                    if (null === $profile) {
+                        throw new UnavailableDataException('cannot find profile with person type: customer');
+                    }
 
-            if (null === $profile) {
-                throw new UnavailableDataException('cannot find profile with person type: customer');
+                    $code = $this->codeGeneratorService->generateCode('Recipient', UserProxyIntertace::PERSON_CUSTOMER);
+                        
+                    if ($this->codeGeneratorService->codeExists($code)) {
+                        throw new UnavailableDataException('code already exists');
+                    }
+
+                    $user = new User();
+                    $user->setPhone($phone);
+                    $user->setPassword(null); // Définir le mot de passe à null pour les utilisateurs authentifiés par OTP
+                    $user->setDeleted(false);
+                    $user->setProfile($profile);
+                    $user->setPersonType(UserProxyIntertace::PERSON_CUSTOMER);
+                    $user->setCreatedAt(new \DateTimeImmutable());
+                    $user->setCode($code);
+
+                    $this->em->persist($user);
+                } catch (\Exception $e) {
+                    // Log l'erreur et transformer en UnavailableDataException
+                    throw new UnavailableDataException('Error creating new user: ' . $e->getMessage());
+                }
+            } elseif ($user->isDeleted()) {
+                // Si l'utilisateur est marqué comme supprimé, on déclenche une exception
+                $this->em->flush(); // Sauvegarde la session comme validée
+                throw new \App\Exception\UserAuthenticationException('This user is not active. Please contact support.');
             }
 
-            $user = new User();
-            $user->setPhone($phone);
-            $user->setPassword(null); // Définir le mot de passe à null pour les utilisateurs authentifiés par OTP
-            $user->setDeleted(false);
-            $user->setProfile($profile);
-            $user->setPersonType(UserProxyIntertace::PERSON_CUSTOMER);
-            $user->setCreatedAt(new \DateTimeImmutable());
-
-            $this->em->persist($user);
-
-        } elseif ($user->isDeleted()) {
-            // Si l'utilisateur est marqué comme supprimé, on déclenche une exception
-            $this->em->flush(); // Sauvegarde la session comme validée
-            throw new \App\Exception\UserAuthenticationException('This user is not active. Please contact support.');
+            $this->em->flush();
+            return $user;
+        } catch (UnavailableDataException $e) {
+            throw $e;
+        } catch (\App\Exception\UserAuthenticationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new UnavailableDataException('Error during OTP verification: ' . $e->getMessage());
         }
-
-        $this->em->flush();
-        return $user;
     }
 }

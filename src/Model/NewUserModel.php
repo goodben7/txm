@@ -28,6 +28,8 @@ class NewUserModel
 
         public ?string $holderId = null,
 
+        public ?string $code = null,
+
     )
     {  
     }

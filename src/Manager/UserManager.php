@@ -8,6 +8,7 @@ use App\Entity\Customer;
 use App\Model\NewUserModel;
 use App\Model\UserProxyIntertace;
 use App\Repository\ProfileRepository;
+use App\Service\CodeGeneratorService;
 use App\Service\ActivityEventDispatcher;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Message\Command\CreateUserCommand;
@@ -25,7 +26,8 @@ class UserManager
         private UserPasswordHasherInterface $hasher,
         private ActivityEventDispatcher $eventDispatcher,
         private CommandBusInterface $bus,
-        private ProfileRepository $profileRepository
+        private ProfileRepository $profileRepository,
+        private CodeGeneratorService $codeGeneratorService
     )
     {
     }
@@ -44,6 +46,7 @@ class UserManager
         $user->setProfile($model->profile);
         $user->setPersonType($model->profile->getPersonType());
         $user->setHolderId($model->holderId);
+        $user->setCode($model->code);
 
 
         $this->em->persist($user);
@@ -163,6 +166,12 @@ class UserManager
 
     public function registerCustomer(NewRegisterUserCustomerModel $model): User
     {
+        $code = $this->codeGeneratorService->generateCode('Customer', UserProxyIntertace::PERSON_SENDER);
+                
+        if ($this->codeGeneratorService->codeExists($code)) {
+            throw new UnavailableDataException('code already exists');
+        }
+
         $customer = new Customer();
     
         $customer->setCompanyName($model->companyName);
@@ -171,6 +180,7 @@ class UserManager
         $customer->setPhone2($model->phone2);
         $customer->setEmail($model->email);
         $customer->setCreatedAt(new \DateTimeImmutable('now'));
+        $customer->setCode($code);
 
         foreach ($model->addresses as $addr) {
             $customer->addAddress($addr);
@@ -178,7 +188,6 @@ class UserManager
 
         try {
             $this->em->persist($customer);
-            $this->em->flush();
         } catch (\Exception $e) {
             throw new UnavailableDataException($e->getMessage());
         }
@@ -197,6 +206,7 @@ class UserManager
                 $customer->getPhone(),
                 $customer->getFullname(),
                 $customer->getId(),
+                $customer->getCode()
             )
         );
 

@@ -78,7 +78,8 @@ use Symfony\Component\Validator\Constraints as Assert;
     'isVerified' => 'exact',
     'isActivated' => 'exact',
     'docStatus' => 'exact',
-    'isPartner' => 'exact'
+    'isPartner' => 'exact',
+    'code' => 'exact'
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
@@ -194,6 +195,10 @@ class Customer implements RessourceInterface
     #[ORM\OneToMany(targetEntity: Store::class, mappedBy: 'customer', cascade: ['all'])]
     #[Groups(groups: ['customer:get'])]
     private Collection $stores;
+
+    #[ORM\Column(length: 6, nullable: true)]
+    #[Groups(groups: ['customer:get'])]
+    private ?string $code = null;
 
     public function __construct()
     {
@@ -544,6 +549,18 @@ class Customer implements RessourceInterface
                 $store->setCustomer(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(?string $code): static
+    {
+        $this->code = $code;
 
         return $this;
     }
