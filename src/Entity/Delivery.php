@@ -137,6 +137,7 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
     'deliveryPerson' => 'exact',
     'deliveryPerson.fullname' => 'ipartial',
     'relatedOrder' => 'exact',
+    'storeId' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt', 'reassignedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt', 'reassignedAt'])]
@@ -321,6 +322,10 @@ class Delivery implements RessourceInterface
     #[ORM\OneToOne(mappedBy: 'delivery', cascade: ['persist', 'remove'])]
     #[Groups(groups: ['delivery:get'])]
     private ?Order $relatedOrder = null;
+
+    #[ORM\Column(length: 16, nullable: true)]
+    #[Groups(groups: ['delivery:get'])]
+    private ?string $storeId = null;
 
     public function getId(): ?string
     {
@@ -775,6 +780,26 @@ class Delivery implements RessourceInterface
         }
 
         $this->relatedOrder = $relatedOrder;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of storeId
+     */ 
+    public function getStoreId(): string|null
+    {
+        return $this->storeId;
+    }
+
+    /**
+     * Set the value of storeId
+     *
+     * @return  self
+     */ 
+    public function setStoreId(?string $storeId): static
+    {
+        $this->storeId = $storeId;
 
         return $this;
     }

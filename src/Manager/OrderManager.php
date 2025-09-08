@@ -48,6 +48,7 @@ class OrderManager
         $order->setCreatedBy($user->getId());
         $order->setUserId($model->userId);
         $order->setDeliveryAddress($model->deliveryAddress);
+        $order->setDescription($model->description);
         
         $totalPrice = 0;
         $store = null;
@@ -247,7 +248,8 @@ class OrderManager
                 $pickupAddress,
                 $order->getDeliveryAddress(),
                 $description,
-                $createdFrom
+                $createdFrom,
+                $order->getStore()->getId()
             );
 
             $delivery = $this->deliveryManager->createFrom($model, false);

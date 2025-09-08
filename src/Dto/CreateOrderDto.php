@@ -20,6 +20,8 @@ class CreateOrderDto
 
         public ?Address $deliveryAddress = null,
 
+        public ?string $description = null,
+
     )
     {
     }

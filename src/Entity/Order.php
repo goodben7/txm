@@ -33,6 +33,7 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => 'order:get'], 
     operations:[
@@ -203,6 +204,10 @@ class Order implements RessourceInterface
     #[ORM\Column(nullable: true)]
     #[Groups(groups: ['order:get'])]
     private ?\DateTimeImmutable $terminedAt = null;
+
+    #[ORM\Column(type: "integer", nullable:true, options: ["unsigned" => true])]
+    #[Groups(groups: ['order:get'])]
+    private ?int $serialNumber = null;
     
     public function __construct()
     {
@@ -483,6 +488,27 @@ class Order implements RessourceInterface
 
         return $this;
     }
+    
+    #[ORM\PrePersist]
+    public function generateSerialNumber(\Doctrine\ORM\Event\PrePersistEventArgs $args): void
+    {
+        if ($this->serialNumber === null) {
+           
+            $entityManager = $args->getObjectManager();
+
+            /** @var \App\Repository\OrderRepository $repository */
+            $repository = $entityManager->getRepository(Order::class);
+            $result = $repository->createQueryBuilder('o')
+                ->select('o.serialNumber')
+                ->orderBy('o.serialNumber', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+            
+            $lastSerialNumber = $result ? $result['serialNumber'] : null;
+            $this->serialNumber = $lastSerialNumber ? ($lastSerialNumber + 1) : 1;
+        }
+    }
 
     public function getTerminedAt(): ?\DateTimeImmutable
     {
@@ -492,6 +518,27 @@ class Order implements RessourceInterface
     public function setTerminedAt(?\DateTimeImmutable $terminedAt): static
     {
         $this->terminedAt = $terminedAt;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of serialNumber
+     * @return string|null Returns the serial number formatted with leading zeros (e.g. 00001)
+     */ 
+    public function getSerialNumber(): string|null
+    {
+        return $this->serialNumber !== null ? sprintf('%05d', $this->serialNumber) : null;
+    }
+
+    /**
+     * Set the value of serialNumber
+     *
+     * @return  self
+     */ 
+    public function setSerialNumber(?int $serialNumber): static
+    {
+        $this->serialNumber = $serialNumber;
 
         return $this;
     }

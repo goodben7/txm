@@ -21,7 +21,8 @@ class CreateOrderProcessor implements ProcessorInterface
         $model = new NewOrderModel(
             $data->orderItems,
             $data->userId,
-            $data->deliveryAddress
+            $data->deliveryAddress,
+            $data->description
         );
  
         return $this->manager->createFrom($model); 

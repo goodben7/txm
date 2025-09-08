@@ -19,6 +19,8 @@ class NewOrderModel
         public ?string $userId = null,
 
         public ?Address $deliveryAddress = null,
+
+        public ?string $description = null,
     )
     {
     }
