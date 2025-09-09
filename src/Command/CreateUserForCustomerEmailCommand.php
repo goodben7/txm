@@ -3,15 +3,16 @@
 namespace App\Command;
 
 use App\Entity\User;
-use App\Entity\Customer;
 use App\Entity\Profile;
+use App\Entity\Customer;
 use App\Manager\UserManager;
 use App\Model\UserProxyIntertace;
+use App\Service\ActivityEventDispatcher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -26,7 +27,8 @@ class CreateUserForCustomerEmailCommand extends Command
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserManager $userManager,
-        private UserPasswordHasherInterface $passwordHasher
+        private UserPasswordHasherInterface $passwordHasher,
+        private ActivityEventDispatcher $eventDispatcher,
     ) {
         parent::__construct();
     }
@@ -101,6 +103,9 @@ class CreateUserForCustomerEmailCommand extends Command
                 $this->entityManager->flush();
                 
                 $io->success(sprintf('Created user with ID: %s and updated customer', $user->getId()));
+
+                $this->eventDispatcher->dispatch($user, User::EVENT_USER_CREATED);
+
             } else {
                 $io->text('Would create user and update customer (dry run)');
                 $io->success('Dry run completed successfully');
