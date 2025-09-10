@@ -44,7 +44,6 @@ class RecipientManager
 
         try {
             $this->em->persist($r);
-            $this->em->flush();
         } catch (\Exception $e) {
             throw new UnavailableDataException($e->getMessage());
         }
@@ -88,16 +87,17 @@ class RecipientManager
 
         try {
             $this->em->persist($user);
-            $this->em->flush();
 
             $r->setUserId($user->getId());
 
             $this->em->persist($r);
-            $this->em->flush();
+            
         } catch (\Exception $e) {
             throw new UnavailableDataException($e->getMessage());
         }
 
+        $this->em->flush();
+        
         $this->eventDispatcher->dispatch($r, Recipient::EVENT_USER_RECIPIENT);
         
         return $r;
