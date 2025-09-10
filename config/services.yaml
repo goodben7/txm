@@ -79,3 +79,9 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # Custom JWT Token Manager to handle different TTL for OTP authentication
+    App\Security\CustomJWTTokenManager:
+        decorates: 'lexik_jwt_authentication.jwt_manager'
+        arguments:
+            $innerJwtManager: '@.inner'

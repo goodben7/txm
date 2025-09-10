@@ -13,11 +13,13 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 class OtpAuthenticator extends AbstractAuthenticator
 {
     public function __construct(
         private AuthService $authService,
+        private JWTTokenManagerInterface $jwtManager,
         private ?\Psr\Log\LoggerInterface $logger = null
     ) {}
 
@@ -57,6 +59,9 @@ class OtpAuthenticator extends AbstractAuthenticator
          */
         $user = $token->getUser();
         
+        // Generate JWT token
+        $jwtToken = $this->jwtManager->create($user);
+        
         // Log successful authentication
         if ($this->logger) {
             $this->logger->info('OTP authentication successful', [
@@ -69,6 +74,7 @@ class OtpAuthenticator extends AbstractAuthenticator
         
         return new JsonResponse([
             'success' => true,
+            'token' => $jwtToken,
             'user' => [
                 'id' => $user->getId(),
                 'phone' => $user->getPhone(),
