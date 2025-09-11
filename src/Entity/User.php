@@ -34,6 +34,7 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Security\User\JWTUserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -106,7 +107,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
-class User implements UserInterface, PasswordAuthenticatedUserInterface, RessourceInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, RessourceInterface, JWTUserInterface
 {
     public const string ID_PREFIX = "US";
     public const string ROLE_ADMIN = 'ROLE_ADMIN';
@@ -204,7 +205,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string) ($this->email ?: $this->phone);
+    }
+    
+    /**
+     * @deprecated since Symfony 5.3, use getUserIdentifier() instead
+     * @see UserInterface
+     */
+    public function getUsername(): string
+    {
+        return $this->getUserIdentifier();
     }
 
     /**
@@ -224,8 +234,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
             $roles = array_merge($roles, $this->profile->getPermissions());
         }
         
-        return array_unique($roles);
-    
+        return array_values(array_unique($roles));
     }
 
     /**
@@ -486,5 +495,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Ressour
         $this->code = $code;
 
         return $this;
+    }
+    
+    /**
+     * @param string $username
+     * @param array $payload
+     * @return JWTUserInterface
+     */
+    public static function createFromPayload($username, array $payload)
+    {
+        $user = new self();
+        
+        if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
+            $user->setEmail($username);
+        } else {
+            $user->setPhone($username);
+        }
+        
+        if (isset($payload['roles']) && is_array($payload['roles'])) {
+            $user->setRoles($payload['roles']);
+        }
+        
+        return $user;
     }
 }

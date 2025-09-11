@@ -2,7 +2,6 @@
 
 namespace App\Manager;
 
-use App\Entity\User;
 use App\Entity\Recipient;
 use App\Model\NewRecipientModel;
 use App\Model\UserProxyIntertace;
@@ -13,6 +12,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\UnavailableDataException;
 use App\Exception\UnauthorizedActionException;
 use App\Service\CodeGeneratorService;
+use App\Message\Command\CommandBusInterface;
+use App\Message\Command\CreateAuthUserCommand;
 
 class RecipientManager
 {
@@ -21,7 +22,8 @@ class RecipientManager
         private ActivityEventDispatcher $eventDispatcher,
         private ProfileRepository $profileRepository,
         private UserRepository $userRepository,
-        private CodeGeneratorService $codeGeneratorService
+        private CodeGeneratorService $codeGeneratorService,
+        private CommandBusInterface $commandBus
     )
     {
     }
@@ -65,17 +67,19 @@ class RecipientManager
                     throw new UnavailableDataException('code already exists');
                 }
 
-                $user = new User();
-                $user->setPhone($model->phone);
-                $user->setPassword(null); // Définir le mot de passe à null pour les utilisateurs authentifiés par OTP
-                $user->setDeleted(false);
+                // Utiliser la commande CreateAuthUserCommand pour créer l'utilisateur
+                $command = new CreateAuthUserCommand(
+                    $model->phone,
+                    $code,
+                    UserProxyIntertace::PERSON_CUSTOMER
+                );
+                
+                $user = $this->commandBus->dispatch($command);
+                
+                // Mettre à jour les informations supplémentaires de l'utilisateur
                 $user->setEmail($model->email);
-                $user->setProfile($profile);
                 $user->setDisplayName($model->fullname);
-                $user->setPersonType(UserProxyIntertace::PERSON_CUSTOMER);
-                $user->setCreatedAt(new \DateTimeImmutable());
                 $user->setHolderId($r->getId());
-                $user->setCode($code);
             } catch (\Exception $e) {
                 throw new UnavailableDataException('Erreur lors de la génération du code ou de la création de l\'utilisateur: ' . $e->getMessage());
             }

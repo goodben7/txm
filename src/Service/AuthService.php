@@ -11,6 +11,8 @@ use App\Repository\ProfileRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\AuthSessionRepository;
 use App\Exception\UnavailableDataException;
+use App\Message\Command\CommandBusInterface;
+use App\Message\Command\CreateAuthUserCommand;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class AuthService
@@ -21,7 +23,8 @@ class AuthService
         private UserRepository $userRepository,
         private ProfileRepository $profileRepository,
         private EventDispatcherInterface $eventDispatcher,
-        private CodeGeneratorService $codeGeneratorService
+        private CodeGeneratorService $codeGeneratorService,
+        private CommandBusInterface $bus
     ) {
     }
 
@@ -55,28 +58,15 @@ class AuthService
 
             if (!$user) {
                 try {
-                    $profile = $this->profileRepository->findOneBy(['personType' => UserProxyIntertace::PERSON_CUSTOMER]);
-
-                    if (null === $profile) {
-                        throw new UnavailableDataException('cannot find profile with person type: customer');
-                    }
-
-                    $code = $this->codeGeneratorService->generateCode('Recipient', UserProxyIntertace::PERSON_CUSTOMER);
+                    $command = new CreateAuthUserCommand(
+                        $phone,
+                        null, // Le code sera généré par le handler si null
+                        UserProxyIntertace::PERSON_CUSTOMER
+                    );
+                    
+                    // Dispatch la commande et récupérer l'utilisateur créé
+                    $user = $this->bus->dispatch($command);
                         
-                    if ($this->codeGeneratorService->codeExists($code)) {
-                        throw new UnavailableDataException('code already exists');
-                    }
-
-                    $user = new User();
-                    $user->setPhone($phone);
-                    $user->setPassword(null); // Définir le mot de passe à null pour les utilisateurs authentifiés par OTP
-                    $user->setDeleted(false);
-                    $user->setProfile($profile);
-                    $user->setPersonType(UserProxyIntertace::PERSON_CUSTOMER);
-                    $user->setCreatedAt(new \DateTimeImmutable());
-                    $user->setCode($code);
-
-                    $this->em->persist($user);
                 } catch (\Exception $e) {
                     // Log l'erreur et transformer en UnavailableDataException
                     throw new UnavailableDataException('Error creating new user: ' . $e->getMessage());
@@ -88,6 +78,7 @@ class AuthService
             }
 
             $this->em->flush();
+
             return $user;
         } catch (UnavailableDataException $e) {
             throw $e;
