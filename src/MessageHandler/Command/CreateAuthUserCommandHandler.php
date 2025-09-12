@@ -54,6 +54,7 @@ class CreateAuthUserCommandHandler implements CommandHandlerInterface
             // Créer l'utilisateur
             $user = new User();
             $user->setPhone($command->phone);
+            $user->setEmail(null);
             $user->setPassword(null); // Mot de passe null pour les utilisateurs authentifiés par OTP
             $user->setPlainPassword(null); // Initialiser explicitement plainPassword pour éviter l'erreur
             $user->setDeleted(false);

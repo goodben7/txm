@@ -77,14 +77,14 @@ class RecipientManager
                 $user = $this->commandBus->dispatch($command);
                 
                 // Mettre à jour les informations supplémentaires de l'utilisateur
-                $user->setEmail($model->email);
+                $user->setEmail(null); //TODO::: check if email already exists
                 $user->setDisplayName($model->fullname);
                 $user->setHolderId($r->getId());
             } catch (\Exception $e) {
                 throw new UnavailableDataException('Erreur lors de la génération du code ou de la création de l\'utilisateur: ' . $e->getMessage());
             }
         } else {
-            $user->setEmail($model->email);
+            $user->setEmail(null); //TODO::: check if email already exists
             $user->setDisplayName($model->fullname);
             $user->setHolderId($r->getId());
         }
