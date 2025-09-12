@@ -2,16 +2,17 @@
 
 namespace App\MessageHandler\Command;
 
-use App\Entity\Profile;
 use App\Entity\User;
+use App\Entity\Profile;
 use App\Manager\UserManager;
-use App\Model\UserProxyIntertace;
 use Psr\Log\LoggerInterface;
+use App\Model\UserProxyIntertace;
 use App\Repository\ProfileRepository;
 use App\Service\CodeGeneratorService;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Exception\UnavailableDataException;
 use App\Message\Command\CreateAuthUserCommand;
 use App\Message\Command\CommandHandlerInterface;
-use App\Exception\UnavailableDataException;
 
 class CreateAuthUserCommandHandler implements CommandHandlerInterface
 {
@@ -19,7 +20,8 @@ class CreateAuthUserCommandHandler implements CommandHandlerInterface
         private LoggerInterface $logger,
         private UserManager $manager,
         private ProfileRepository $profileRepository,
-        private CodeGeneratorService $codeGeneratorService
+        private CodeGeneratorService $codeGeneratorService,
+        private EntityManagerInterface $em
     ) { 
     }
 
@@ -63,7 +65,9 @@ class CreateAuthUserCommandHandler implements CommandHandlerInterface
             $user->setCreatedAt(new \DateTimeImmutable());
             $user->setCode($code);
             
-            return $this->manager->create($user);
+            $this->em->persist($user);
+
+            return $user;
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
             throw new \Exception('Error in CreateAuthUserCommandHandler: ' . $e->getMessage(), 0, $e);
