@@ -18,6 +18,7 @@ class ActivityEvent extends Event {
     public function __construct(private ?RessourceInterface $ressource, private string $activity, ?string $ressourceClass = null, ?string $activityDescription = null)
     {
         $this->ressourceClass = $ressourceClass;
+        $this->activityDescription = $activityDescription;
 
         if (null !== $ressource) {
             $this->ressourceClass = get_class($ressource);
