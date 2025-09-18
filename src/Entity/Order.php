@@ -114,6 +114,8 @@ class Order implements RessourceInterface
     public const string EVENT_ORDER_TERMINATED = "order_terminated";
     public const string EVENT_ORDER_IN_DELIVERY = "order_in_delivery";
     public const string EVENT_ORDER_DELIVERED = "order_delivered";
+    public const string DELIVERY_FEE_USD = "2.5";
+    public const string DELIVERY_FEE_CDF = "7000";
 
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
@@ -137,6 +139,10 @@ class Order implements RessourceInterface
     #[ORM\Column(type: Types::DECIMAL, precision: 17, scale: 2)]
     #[Groups(groups: ['order:get'])]
     private ?string $totalPrice = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 17, scale: 2, nullable: true)]
+    #[Groups(groups: ['order:get'])]
+    private ?string $deliveryFee = null;
 
     #[ORM\Column(length: 16, nullable: true)]
     #[Groups(groups: ['order:get'])]
@@ -567,6 +573,27 @@ class Order implements RessourceInterface
     public function setIsFromMerchant(?bool $isFromMerchant): static
     {
         $this->isFromMerchant = $isFromMerchant;
+
+        return $this;
+    }
+
+    /**
+     * Get the delivery fee
+     * @return string|null
+     */
+    public function getDeliveryFee(): ?string
+    {
+        return $this->deliveryFee;
+    }
+
+    /**
+     * Set the delivery fee
+     * @param string|null $deliveryFee
+     * @return self
+     */
+    public function setDeliveryFee(?string $deliveryFee): static
+    {
+        $this->deliveryFee = $deliveryFee;
 
         return $this;
     }
