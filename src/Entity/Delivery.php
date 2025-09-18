@@ -138,6 +138,7 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
     'deliveryPerson.fullname' => 'ipartial',
     'relatedOrder' => 'exact',
     'storeId' => 'exact',
+    'recipient.userId' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt', 'reassignedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt', 'deliveryDate', 'validatedAt', 'pickupedAt', 'inprogressAt', 'canceledAt', 'DelayedAt', 'terminedAt', 'reassignedAt'])]
