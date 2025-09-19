@@ -142,12 +142,19 @@ class OrderManager
      * @return float The total price including delivery fee
      */
     private function calculateTotalPrice(float $totalPrice, ?string $currency, Order $order): float {
+        // Set the subtotal (price of items before delivery fee and tax)
+        $order->setSubtotal(number_format($totalPrice, 2, '.', ''));
+        
         // Apply delivery fee based on currency
         $deliveryFee = $currency === 'CDF' ? Order::DELIVERY_FEE_CDF : Order::DELIVERY_FEE_USD;
         $order->setDeliveryFee($deliveryFee);
         
-        // Calculate total with delivery fee
-        return $totalPrice + (float)$deliveryFee;
+        // Calculate delivery tax (16% of delivery fee)
+        $deliveryTax = (float)$deliveryFee * 0.16;
+        $order->setDeliveryTax(number_format($deliveryTax, 2, '.', ''));
+        
+        // Calculate total with delivery fee and tax
+        return $totalPrice + (float)$deliveryFee + $deliveryTax;
     }
     
     /**
@@ -169,6 +176,33 @@ class OrderManager
         } catch (\Exception $e) {
             throw new UnavailableDataException($e->getMessage());
         }
+    }
+    
+    /**
+     * Estimate an order without persisting it
+     * @param \App\Model\NewOrderModel $model The order data model
+     * @throws \App\Exception\InvalidActionInputException If order items validation fails
+     * @return Order The estimated order with all price calculations
+     */
+    public function estimate(NewOrderModel $model): Order {
+        // Get current user
+        $user = $this->getCurrentUser();
+        
+        // Initialize new order with basic information
+        $order = $this->initializeOrder($model, $user);
+        
+        // Process order items and validate them
+        [$totalPrice, $store, $customer, $currency] = $this->processOrderItems($model->orderItems, $order);
+        
+        // Calculate and set delivery fee and total price
+        $totalWithDelivery = $this->calculateTotalPrice($totalPrice, $currency, $order);
+        
+        // Set remaining order properties
+        $order->setCustomer($customer);
+        $order->setStore($store);
+        $order->setTotalPrice((string)$totalWithDelivery);
+        
+        return $order;
     }
 
     /**

@@ -22,6 +22,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\State\ValidateOrderProcessor;
 use ApiPlatform\Metadata\GetCollection;
 use App\State\InprogressOrderProcessor;
+use App\State\EstimateOrderProcessor;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -77,6 +78,12 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
             input: FinishOrderDto::class,
             processor: FinishOrderProcessor::class,
             status: 200
+        ),
+        new Post(
+            uriTemplate: '/orders/estimates',
+            security: 'is_granted("ROLE_ORDER_CREATE")',
+            input: CreateOrderDto::class,
+            processor: EstimateOrderProcessor::class,
         ),
     ]
 )]
@@ -146,7 +153,15 @@ class Order implements RessourceInterface
 
     #[ORM\Column(type: Types::DECIMAL, precision: 17, scale: 2, nullable: true)]
     #[Groups(groups: ['order:get'])]
+    private ?string $subtotal = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 17, scale: 2, nullable: true)]
+    #[Groups(groups: ['order:get'])]
     private ?string $deliveryFee = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 17, scale: 2, nullable: true)]
+    #[Groups(groups: ['order:get'])]
+    private ?string $deliveryTax = null;
 
     #[ORM\Column(length: 16, nullable: true)]
     #[Groups(groups: ['order:get'])]
@@ -598,6 +613,46 @@ class Order implements RessourceInterface
     public function setDeliveryFee(?string $deliveryFee): static
     {
         $this->deliveryFee = $deliveryFee;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of deliveryTax
+     */ 
+    public function getDeliveryTax(): string|null
+    {
+        return $this->deliveryTax;
+    }
+
+    /**
+     * Set the value of deliveryTax
+     *
+     * @return  self
+     */ 
+    public function setDeliveryTax(?string $deliveryTax)
+    {
+        $this->deliveryTax = $deliveryTax;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of subtotal
+     */ 
+    public function getSubtotal(): string|null
+    {
+        return $this->subtotal;
+    }
+
+    /**
+     * Set the value of subtotal
+     *
+     * @return  self
+     */ 
+    public function setSubtotal(?string $subtotal): static
+    {
+        $this->subtotal = $subtotal;
 
         return $this;
     }
