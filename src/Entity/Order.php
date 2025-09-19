@@ -106,6 +106,7 @@ class Order implements RessourceInterface
     public const string STATUS_COMPLETED = 'C';
     public const string STATUS_REJECTED = 'R';
     public const string STATUS_IN_DELIVERY = 'L';
+    public const string STATUS_PICKUPED = 'U';
 
     public const string EVENT_ORDER_VALIDATED = "order_validated";
     public const string EVENT_ORDER_CREATED = "order_created";

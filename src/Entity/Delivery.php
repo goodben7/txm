@@ -176,7 +176,7 @@ class Delivery implements RessourceInterface
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(IdGenerator::class)]
     #[ORM\Column(length: 16)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'order:get'])]
     private ?string $id = null;
 
     #[ORM\Column]
@@ -184,7 +184,7 @@ class Delivery implements RessourceInterface
     private ?\DateTimeImmutable $deliveryDate = null;
 
     #[ORM\Column(length: 1)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'order:get'])]
     private ?string $status = self::STATUS_PENDING;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -270,7 +270,7 @@ class Delivery implements RessourceInterface
     private ?\DateTimeImmutable $DelayedAt = null;
 
     #[ORM\Column(length: 16)]
-    #[Groups(groups: ['delivery:get'])]
+    #[Groups(groups: ['delivery:get', 'order:get'])]
     private ?string $trackingNumber = null;
 
     #[ORM\Column(length: 16, nullable: true)]
