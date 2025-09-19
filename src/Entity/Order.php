@@ -91,6 +91,7 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
     'customer' => 'exact',
     'userId' => 'exact',
     'delivery' => 'exact',
+    'isFromMerchant' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'validatedAt', 'rejectedAt', 'inprogressAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'validatedAt', 'rejectedAt', 'inprogressAt'])]
@@ -104,12 +105,17 @@ class Order implements RessourceInterface
     public const string STATUS_IN_PROGRESS = 'I';
     public const string STATUS_COMPLETED = 'C';
     public const string STATUS_REJECTED = 'R';
+    public const string STATUS_IN_DELIVERY = 'L';
 
     public const string EVENT_ORDER_VALIDATED = "order_validated";
     public const string EVENT_ORDER_CREATED = "order_created";
     public const string EVENT_ORDER_REJECTED = "order_rejected";
     public const string EVENT_ORDER_INPROGRESS = "order_inprogress";
     public const string EVENT_ORDER_TERMINATED = "order_terminated";
+    public const string EVENT_ORDER_IN_DELIVERY = "order_in_delivery";
+    public const string EVENT_ORDER_DELIVERED = "order_delivered";
+    public const string DELIVERY_FEE_USD = "2.5";
+    public const string DELIVERY_FEE_CDF = "7000";
 
     #[ORM\Id]
     #[ORM\GeneratedValue( strategy: 'CUSTOM')]
@@ -133,6 +139,10 @@ class Order implements RessourceInterface
     #[ORM\Column(type: Types::DECIMAL, precision: 17, scale: 2)]
     #[Groups(groups: ['order:get'])]
     private ?string $totalPrice = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 17, scale: 2, nullable: true)]
+    #[Groups(groups: ['order:get'])]
+    private ?string $deliveryFee = null;
 
     #[ORM\Column(length: 16, nullable: true)]
     #[Groups(groups: ['order:get'])]
@@ -208,6 +218,10 @@ class Order implements RessourceInterface
     #[ORM\Column(type: "integer", nullable:true, options: ["unsigned" => true])]
     #[Groups(groups: ['order:get'])]
     private ?int $serialNumber = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ["default" => false])]
+    #[Groups(groups: ['order:get'])]
+    private bool $isFromMerchant = false;
     
     public function __construct()
     {
@@ -539,6 +553,47 @@ class Order implements RessourceInterface
     public function setSerialNumber(?int $serialNumber): static
     {
         $this->serialNumber = $serialNumber;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of isFromMerchant
+     */ 
+    public function getIsFromMerchant(): bool
+    {
+        return $this->isFromMerchant;
+    }
+
+    /**
+     * Set the value of isFromMerchant
+     *
+     * @return  self
+     */ 
+    public function setIsFromMerchant(?bool $isFromMerchant): static
+    {
+        $this->isFromMerchant = $isFromMerchant;
+
+        return $this;
+    }
+
+    /**
+     * Get the delivery fee
+     * @return string|null
+     */
+    public function getDeliveryFee(): ?string
+    {
+        return $this->deliveryFee;
+    }
+
+    /**
+     * Set the delivery fee
+     * @param string|null $deliveryFee
+     * @return self
+     */
+    public function setDeliveryFee(?string $deliveryFee): static
+    {
+        $this->deliveryFee = $deliveryFee;
 
         return $this;
     }

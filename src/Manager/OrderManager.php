@@ -29,18 +29,52 @@ class OrderManager
     }
     
     /**
-     * Summary of createFrom
-     * @param \App\Model\NewOrderModel $model
-     * @throws \App\Exception\UnavailableDataException
-     * @return Order
+     * Create a new order from the provided model
+     * @param \App\Model\NewOrderModel $model The order data model
+     * @throws \App\Exception\UnavailableDataException If there's an error during order creation
+     * @throws \App\Exception\InvalidActionInputException If order items validation fails
+     * @return Order The created order
      */
     public function createFrom(NewOrderModel $model): Order {
-
+        // Get current user
+        $user = $this->getCurrentUser();
+        
+        // Initialize new order with basic information
+        $order = $this->initializeOrder($model, $user);
+        
+        // Process order items and validate them
+        [$totalPrice, $store, $customer, $currency] = $this->processOrderItems($model->orderItems, $order);
+        
+        // Calculate and set delivery fee and total price
+        $totalWithDelivery = $this->calculateTotalPrice($totalPrice, $currency, $order);
+        
+        // Set remaining order properties
+        $order->setCustomer($customer);
+        $order->setStore($store);
+        $order->setTotalPrice((string)$totalWithDelivery);
+        
+        // Persist order and dispatch event
+        $this->persistOrderAndNotify($order);
+        
+        return $order;
+    }
+    
+    /**
+     * Get the current authenticated user
+     * @return User The current user
+     */
+    private function getCurrentUser(): User {
         $identifier = $this->security->getUser()->getUserIdentifier();
-
-        /** @var User|null $user */
-        $user = $this->userRepository->findByEmailOrPhone($identifier);
-
+        return $this->userRepository->findByEmailOrPhone($identifier);
+    }
+    
+    /**
+     * Initialize a new order with basic information
+     * @param NewOrderModel $model The order data model
+     * @param User $user The current user
+     * @return Order The initialized order
+     */
+    private function initializeOrder(NewOrderModel $model, User $user): Order {
         $order = new Order();
         
         $order->setStatus(Order::STATUS_PENDING);
@@ -50,31 +84,78 @@ class OrderManager
         $order->setDeliveryAddress($model->deliveryAddress);
         $order->setDescription($model->description);
         
+        return $order;
+    }
+    
+    /**
+     * Process order items, validate them and add them to the order
+     * @param array $orderItems The order items to process
+     * @param Order $order The order to add items to
+     * @return array An array containing [totalPrice, store, customer, currency]
+     * @throws InvalidActionInputException If validation fails
+     */
+    private function processOrderItems(array $orderItems, Order $order): array {
         $totalPrice = 0;
         $store = null;
         $customer = null;
+        $currency = null;
+        $allowedCurrencies = ['USD', 'CDF'];
         
-        foreach ($model->orderItems as $index => $item) {
-            // Vérifier que tous les produits proviennent du même magasin
+        foreach ($orderItems as $index => $item) {
             $currentStore = $item->getProduct()->getStore();
+            $currentCurrency = $item->getProduct()->getCurrency();
+            
+            // Validate currency
+            if (!in_array($currentCurrency, $allowedCurrencies)) {
+                throw new InvalidActionInputException('Only USD and CDF currencies are allowed');
+            }
             
             if ($index === 0) {
-                // Premier produit, on initialise le magasin de référence
+                // Initialize store and currency from first product
                 $store = $currentStore;
                 $customer = $currentStore->getCustomer();
-            } else if ($store !== null && $currentStore->getId() !== $store->getId()) {
-                // Si un produit provient d'un magasin différent, on lance une exception
-                throw new InvalidActionInputException('All products in an order must come from the same store');
+                $currency = $currentCurrency;
+            } else {
+                // Ensure all products have the same currency
+                if ($currency !== $currentCurrency) {
+                    throw new InvalidActionInputException('All products in an order must have the same currency');
+                }
+                
+                // Ensure all products come from the same store
+                if ($store !== null && $currentStore->getId() !== $store->getId()) {
+                    throw new InvalidActionInputException('All products in an order must come from the same store');
+                }
             }
             
             $order->addOrderItem($item);
             $totalPrice += (float)$item->getUnitPrice() * $item->getQuantity();
         }
         
-        $order->setCustomer($customer);
-        $order->setStore($store);
-        $order->setTotalPrice((string)$totalPrice);
+        return [$totalPrice, $store, $customer, $currency];
+    }
+    
+    /**
+     * Calculate the total price including delivery fee
+     * @param float $totalPrice The subtotal price
+     * @param string|null $currency The currency code
+     * @param Order $order The order to set delivery fee on
+     * @return float The total price including delivery fee
+     */
+    private function calculateTotalPrice(float $totalPrice, ?string $currency, Order $order): float {
+        // Apply delivery fee based on currency
+        $deliveryFee = $currency === 'CDF' ? Order::DELIVERY_FEE_CDF : Order::DELIVERY_FEE_USD;
+        $order->setDeliveryFee($deliveryFee);
         
+        // Calculate total with delivery fee
+        return $totalPrice + (float)$deliveryFee;
+    }
+    
+    /**
+     * Persist the order and dispatch creation event
+     * @param Order $order The order to persist
+     * @throws UnavailableDataException If persistence fails
+     */
+    private function persistOrderAndNotify(Order $order): void {
         try {
             $this->em->persist($order);
             $this->em->flush();
@@ -85,12 +166,9 @@ class OrderManager
                 null, 
                 null
             );
-
         } catch (\Exception $e) {
             throw new UnavailableDataException($e->getMessage());
         }
-        
-        return $order;
     }
 
     /**

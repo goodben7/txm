@@ -61,6 +61,7 @@ class DeliveryManager
                 $order->setCreatedBy($user? $user->getId() : 'SYSTEM');
                 $order->setStatus(Order::STATUS_COMPLETED);
                 $order->setCustomer($model->customer);
+                $order->setIsFromMerchant(true);
 
                 $store = $model->customer->getStores()->count() > 0 ? $model->customer->getStores()->first() : null;
                 $order->setStore($store);
