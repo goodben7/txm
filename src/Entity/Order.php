@@ -92,6 +92,9 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
     'userId' => 'exact',
     'delivery' => 'exact',
     'isFromMerchant' => 'exact',
+    'delivery.id' => 'exact',
+    'delivery.trackingNumber' => 'exact',
+    'delivery.status' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'validatedAt', 'rejectedAt', 'inprogressAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'validatedAt', 'rejectedAt', 'inprogressAt'])]
