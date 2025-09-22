@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Entity\City;
 use App\Entity\User;
 use App\Entity\Order;
 use App\Entity\Store;
@@ -11,6 +12,7 @@ use App\Entity\Service;
 use App\Entity\Customer;
 use App\Entity\Delivery;
 use App\Entity\Document;
+use App\Entity\Province;
 use App\Model\Ressource;
 use App\Entity\Recipient;
 use App\Entity\ProductType;
@@ -34,4 +36,6 @@ return static function (): iterable {
     yield Ressource::new("product", Product::class, "PD", true);
     yield Ressource::new("order", Order::class, "OR", true);
     yield Ressource::new("produc_type", ProductType::class, "PT", true);
+    yield Ressource::new("city", City::class, "CY", true);
+    yield Ressource::new("province", Province::class, "PV", true);
 };

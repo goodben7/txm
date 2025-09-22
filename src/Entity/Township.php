@@ -75,6 +75,10 @@ class Township
     #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'township')]
     private Collection $addresses;
 
+    #[ORM\ManyToOne(inversedBy: 'townships')]
+    #[Groups(groups: ['township:get', 'township:post', 'township:patch'])]
+    private ?City $city = null;
+
     public function __construct()
     {
         $this->addresses = new ArrayCollection();
@@ -135,6 +139,18 @@ class Township
                 $address->setTownship(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCity(): ?City
+    {
+        return $this->city;
+    }
+
+    public function setCity(?City $city): static
+    {
+        $this->city = $city;
 
         return $this;
     }
