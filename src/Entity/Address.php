@@ -20,6 +20,7 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 
 #[ORM\Entity(repositoryClass: AddressRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => 'address:get'],
     operations: [
@@ -53,6 +54,8 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'recipient' => 'exact',
     'township' => 'exact',
     'user' => 'exact',
+    'province' => 'exact',
+    'city' => 'exact',
 ])]
 class Address
 {
@@ -102,6 +105,14 @@ class Address
     #[ORM\JoinColumn(nullable: true)]
     #[Groups(groups: ['address:post', 'address:get', 'address:patch'])]
     private ?User $user = null;
+
+    #[ORM\ManyToOne]
+    #[Groups(groups: ['customer:get', 'address:get', 'recipient:get'])]
+    private ?Province $province = null;
+
+    #[ORM\ManyToOne]
+    #[Groups(groups: ['customer:get', 'address:get', 'recipient:get'])]
+    private ?City $city = null;
 
     public function __construct()
     {
@@ -237,5 +248,56 @@ class Address
         $this->user = $user;
 
         return $this;
+    }
+
+    public function getProvince(): ?Province
+    {
+        return $this->province;
+    }
+
+    public function setProvince(?Province $province): static
+    {
+        $this->province = $province;
+
+        return $this;
+    }
+
+    public function getCity(): ?City
+    {
+        return $this->city;
+    }
+
+    public function setCity(?City $city): static
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+    
+    #[ORM\PrePersist]
+    public function setProvinceAndCityFromTownship(): void
+    {
+        if ($this->township !== null) {
+            $city = $this->township->getCity();
+            if ($city !== null) {
+                $this->city = $city;
+                $this->province = $city->getProvince();
+            }
+        }
+    }
+    
+    #[ORM\PreUpdate]
+    public function updateProvinceAndCityFromTownship(): void
+    {
+        if ($this->township !== null) {
+            $city = $this->township->getCity();
+            if ($city !== null) {
+                $this->city = $city;
+                $this->province = $city->getProvince();
+            } else {
+                $this->city = null;
+                $this->province = null;
+            }
+        } 
     }
 }

@@ -27,7 +27,8 @@ class CreateStoreProcessor implements ProcessorInterface
             null,
             $data->active,
             $data->customer,
-            $data->service
+            $data->service,
+            $data->addresses,
         ));
 
     }

@@ -31,6 +31,7 @@ class StoreManager
         $store->setCreatedAt(new \DateTimeImmutable());
         $store->setCustomer($model->customer);
         $store->setService($model->service);
+        $store->setAddress($model->address);
 
         $this->em->persist($store);
         $this->em->flush();

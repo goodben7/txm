@@ -2,18 +2,23 @@
 
 namespace App\Entity;
 
+use App\Entity\City;
 use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
 use Doctrine\ORM\Mapping as ORM;
 use App\Model\RessourceInterface;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ProvinceRepository;
 use ApiPlatform\Metadata\GetCollection;
 use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Doctrine\Common\Collections\ArrayCollection;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Common\State\PersistProcessor;
@@ -43,6 +48,13 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
         ),
     ]
 )]
+#[ApiFilter(SearchFilter::class, properties: [
+    'id' => 'exact',
+    'label' => 'ipartial',
+    'cities' => 'exact'
+])]
+#[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
+#[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
 class Province implements RessourceInterface
 {
     public const string ID_PREFIX = "PV";

@@ -46,7 +46,8 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
 #[ApiFilter(SearchFilter::class, properties: [
     'id' => 'exact',
     'label' => 'ipartial',
-    'zone' => 'exact'
+    'zone' => 'exact',
+    'city' => 'exact',
 ])]
 class Township
 {
