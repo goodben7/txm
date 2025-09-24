@@ -21,6 +21,8 @@ class NewOrderModel
         public ?Address $deliveryAddress = null,
 
         public ?string $description = null,
+
+        public ?Address $pickupAddress = null,
     )
     {
     }
