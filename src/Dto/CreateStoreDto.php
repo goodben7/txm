@@ -2,6 +2,7 @@
 
 namespace App\Dto;
 
+use App\Entity\Address;
 use App\Entity\Service;
 use App\Entity\Customer;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -23,7 +24,9 @@ class CreateStoreDto
 
         #[Assert\NotNull]
         #[Assert\NotBlank]
-        public ?Service $service = null
+        public ?Service $service = null,
+
+        public ?Address $addresses = null,
     )
     {
     }

@@ -2,6 +2,7 @@
 
 namespace App\Model;
 
+use App\Entity\Address;
 use App\Entity\Service;
 use App\Entity\Customer;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -29,7 +30,9 @@ class CreateStoreModel
 
         #[Assert\NotNull]
         #[Assert\NotBlank]
-        public ?Service $service = null
+        public ?Service $service = null,
+
+        public ?Address $address = null,
     )
     {
     }

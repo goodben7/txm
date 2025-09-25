@@ -22,6 +22,7 @@ class CreateOrderDto
 
         public ?string $description = null,
 
+        public ?Address $pickupAddress = null,
     )
     {
     }

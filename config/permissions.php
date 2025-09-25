@@ -65,6 +65,16 @@ return static function (): iterable {
     yield Permission::new('ROLE_ZONE_DETAILS', "Consulter les détails d'une zone");
     yield Permission::new('ROLE_ZONE_UPDATE', "Modifier une zone");
     
+    yield Permission::new('ROLE_PROVINCE_CREATE', "Créer une province");
+    yield Permission::new('ROLE_PROVINCE_LIST', "Consulter la liste des provinces");
+    yield Permission::new('ROLE_PROVINCE_DETAILS', "Consulter les détails d'une province");
+    yield Permission::new('ROLE_PROVINCE_UPDATE', "Modifier une province");
+    
+    yield Permission::new('ROLE_CITY_CREATE', "Créer une ville");
+    yield Permission::new('ROLE_CITY_LIST', "Consulter la liste des villes");
+    yield Permission::new('ROLE_CITY_DETAILS', "Consulter les détails d'une ville");
+    yield Permission::new('ROLE_CITY_UPDATE', "Modifier une ville");
+    
     yield Permission::new('ROLE_ACTIVITY_LIST', "Consulter la liste des activités");
     yield Permission::new('ROLE_ACTIVITY_VIEW', "Consulter les détails d'une activité");
 

@@ -83,6 +83,7 @@ class OrderManager
         $order->setUserId($model->userId);
         $order->setDeliveryAddress($model->deliveryAddress);
         $order->setDescription($model->description);
+        $order->setPickupAddress($model->pickupAddress);
         
         return $order;
     }

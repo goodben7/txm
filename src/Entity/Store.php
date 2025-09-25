@@ -72,7 +72,9 @@ use ApiPlatform\Doctrine\Common\State\PersistProcessor;
     'active' => 'exact',
     'service' => 'exact',
     'customer' => 'exact',
-    'isVerified' => 'exact'
+    'isVerified' => 'exact',
+    'address' => 'exact',
+    'city' => 'exact',
 ])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
@@ -159,6 +161,14 @@ class Store implements RessourceInterface
     #[Groups(groups: ['store:get'])]
     #[ORM\Column(nullable: false, options: ['default' => false])]
     private bool $isVerified = false;
+
+    #[ORM\ManyToOne]
+    #[Groups(['store:get', 'store:patch'])]
+    private ?Address $address = null;
+
+    #[ORM\ManyToOne]
+    #[Groups(groups: ['store:get'])]
+    private ?City $city = null;
 
     public function getId(): ?string
     {
@@ -449,5 +459,46 @@ class Store implements RessourceInterface
         $this->isVerified = $isVerified;
 
         return $this;
+    }
+
+    public function getAddress(): ?Address
+    {
+        return $this->address;
+    }
+
+    public function setAddress(?Address $address): static
+    {
+        $this->address = $address;
+
+        return $this;
+    }
+
+    public function getCity(): ?City
+    {
+        return $this->city;
+    }
+
+    public function setCity(?City $city): static
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+    
+    #[ORM\PrePersist]
+    public function setCityFromAddress(): void
+    {
+        if ($this->address !== null) {
+            $city = $this->address->getCity();
+            if ($city !== null) {
+                $this->city = $city;
+            }
+        }
+    }
+    
+    #[ORM\PreUpdate]
+    public function updateCityFromAddress(): void
+    {
+        $this->city = $this->address?->getCity() ?: null;
     }
 }
