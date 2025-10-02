@@ -23,7 +23,9 @@ class EstimateOrderProcessor implements ProcessorInterface
             $data->orderItems,
             $data->userId,
             $data->deliveryAddress,
-            $data->description
+            $data->description,
+            $data->pickupAddress ?? null,
+            $data->selectedOptions ?? []
         );
  
         // Get the estimated order but convert it to a response object to avoid IRI generation issues

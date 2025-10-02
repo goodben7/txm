@@ -23,6 +23,18 @@ class CreateOrderDto
         public ?string $description = null,
 
         public ?Address $pickupAddress = null,
+        
+        /**
+         * Array of selected product options for each order item
+         * Format: [
+         *   'orderItemIndex' => [
+         *     ['productOptionValueId' => 1],
+         *     ['productOptionValueId' => 2]
+         *   ]
+         * ]
+         * Where orderItemIndex corresponds to the index in the orderItems array
+         */
+        public array $selectedOptions = [],
     )
     {
     }

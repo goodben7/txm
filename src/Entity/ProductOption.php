@@ -45,7 +45,7 @@ class ProductOption  implements RessourceInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['product:get', 'product_option', 'product_option:get', 'product_option:patch'])]
+    #[Groups(['product:get', 'product_option', 'product_option:get', 'product_option:patch', 'order:get'])]
     private ?string $name = null;
 
     #[ORM\ManyToOne(inversedBy: 'productOptions')]

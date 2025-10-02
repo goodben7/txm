@@ -39,20 +39,20 @@ class ProductOptionValue implements RessourceInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['product:get', 'product_option_value', 'product_option_value:get'])]
+    #[Groups(['product:get', 'product_option_value', 'product_option_value:get', 'order:get'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['product:get', 'product_option_value', 'product_option_value:get', 'product_option_value:patch'])]
+    #[Groups(['product:get', 'product_option_value', 'product_option_value:get', 'product_option_value:patch', 'order:get'])]
     private ?string $value = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 17, scale: 2)]
-    #[Groups(['product:get', 'product_option_value', 'product_option_value:get', 'product_option_value:patch'])]
+    #[Groups(['product:get', 'product_option_value', 'product_option_value:get', 'product_option_value:patch', 'order:get'])]
     private ?string $priceAdjustment = null;
 
     #[ORM\ManyToOne(inversedBy: 'productOptionValues')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['product_option_value', 'product_option_value:get'])]
+    #[Groups(['product_option_value', 'product_option_value:get', 'order:get'])]
     private ?ProductOption $options = null;
 
     public function getId(): ?int

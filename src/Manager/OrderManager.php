@@ -5,7 +5,9 @@ namespace App\Manager;
 use App\Entity\User;
 use App\Entity\Order;
 use App\Entity\Address;
+use App\Entity\OrderItem;
 use App\Entity\Recipient;
+use App\Entity\OrderItemOption;
 use App\Model\NewOrderModel;
 use App\Model\NewDeliveryModel;
 use App\Repository\UserRepository;
@@ -43,7 +45,7 @@ class OrderManager
         $order = $this->initializeOrder($model, $user);
         
         // Process order items and validate them
-        [$totalPrice, $store, $customer, $currency] = $this->processOrderItems($model->orderItems, $order);
+        [$totalPrice, $store, $customer, $currency] = $this->processOrderItems($model->orderItems, $order, $model->selectedOptions);
         
         // Calculate and set delivery fee and total price
         $totalWithDelivery = $this->calculateTotalPrice($totalPrice, $currency, $order);
@@ -92,10 +94,11 @@ class OrderManager
      * Process order items, validate them and add them to the order
      * @param array $orderItems The order items to process
      * @param Order $order The order to add items to
+     * @param array $selectedOptions The selected options for each order item
      * @return array An array containing [totalPrice, store, customer, currency]
      * @throws InvalidActionInputException If validation fails
      */
-    private function processOrderItems(array $orderItems, Order $order): array {
+    private function processOrderItems(array $orderItems, Order $order, array $selectedOptions = []): array {
         $totalPrice = 0;
         $store = null;
         $customer = null;
@@ -130,19 +133,43 @@ class OrderManager
             
             $order->addOrderItem($item);
             $totalPrice += (float)$item->getUnitPrice() * $item->getQuantity();
+            
+            // Process selected options for this item if any
+            if (isset($selectedOptions[$index]) && is_array($selectedOptions[$index])) {
+                $this->processOrderItemOptions($item, $selectedOptions[$index]);
+            }
         }
         
         return [$totalPrice, $store, $customer, $currency];
     }
     
     /**
-     * Calculate the total price including delivery fee
+     * Calculate the total price including delivery fee and product options price adjustments
      * @param float $totalPrice The subtotal price
      * @param string|null $currency The currency code
      * @param Order $order The order to set delivery fee on
-     * @return float The total price including delivery fee
+     * @return float The total price including delivery fee and options price adjustments
      */
     private function calculateTotalPrice(float $totalPrice, ?string $currency, Order $order): float {
+        // Calculate price adjustments from product options
+        $optionAdjustments = 0;
+        
+        // Loop through all order items to calculate option price adjustments
+        foreach ($order->getOrderItems() as $orderItem) {
+            $quantity = $orderItem->getQuantity();
+            
+            // Calculate price adjustments based on the selected options only
+            foreach ($orderItem->getOrderItemOptions() as $orderItemOption) {
+                $optionValue = $orderItemOption->getOptionValue();
+                if ($optionValue) {
+                    $optionAdjustments += (float)$optionValue->getPriceAdjustment() * $quantity;
+                }
+            }
+        }
+        
+        // Add option adjustments to total price
+        $totalPrice += $optionAdjustments;
+        
         // Set the subtotal (price of items before delivery fee and tax)
         $order->setSubtotal(number_format($totalPrice, 2, '.', ''));
         
@@ -180,6 +207,41 @@ class OrderManager
     }
     
     /**
+     * Process selected options for an order item
+     * @param OrderItem $orderItem The order item to add options to
+     * @param array $optionValueIds Array of product option value IDs
+     * @throws UnavailableDataException If an option value cannot be found
+     */
+    private function processOrderItemOptions(OrderItem $orderItem, array $optionValueIds): void {
+        if (empty($optionValueIds)) {
+            return;
+        }
+        
+        // Get the repository for ProductOptionValue
+        $optionValueRepository = $this->em->getRepository('App\\Entity\\ProductOptionValue');
+        
+        foreach ($optionValueIds as $optionValueId) {
+            // Find the option value by ID
+            $optionValue = $optionValueRepository->find($optionValueId);
+            
+            if (!$optionValue) {
+                throw new UnavailableDataException("Product option value with ID {$optionValueId} not found");
+            }
+            
+            // Create a new OrderItemOption and associate it with the order item
+            $orderItemOption = new OrderItemOption();
+            $orderItemOption->setOrderItem($orderItem);
+            $orderItemOption->setOptionValue($optionValue);
+            
+            // Add the option to the order item
+            $orderItem->addOrderItemOption($orderItemOption);
+            
+            // Persist the option
+            $this->em->persist($orderItemOption);
+        }
+    }
+    
+    /**
      * Estimate an order without persisting it
      * @param \App\Model\NewOrderModel $model The order data model
      * @throws \App\Exception\InvalidActionInputException If order items validation fails
@@ -193,7 +255,7 @@ class OrderManager
         $order = $this->initializeOrder($model, $user);
         
         // Process order items and validate them
-        [$totalPrice, $store, $customer, $currency] = $this->processOrderItems($model->orderItems, $order);
+        [$totalPrice, $store, $customer, $currency] = $this->processOrderItems($model->orderItems, $order, $model->selectedOptions);
         
         // Calculate and set delivery fee and total price
         $totalWithDelivery = $this->calculateTotalPrice($totalPrice, $currency, $order);
