@@ -36,6 +36,21 @@ class CreateProductDto
 
         #[Assert\Currency]
         public ?string $currency = null,
+        
+        /**
+         * Array of product options with their values
+         * Format: [
+         *   ['name' => 'Color', 'values' => [
+         *     ['value' => 'Red', 'priceAdjustment' => '0.00'],
+         *     ['value' => 'Blue', 'priceAdjustment' => '5.00']
+         *   ]],
+         *   ['name' => 'Size', 'values' => [
+         *     ['value' => 'S', 'priceAdjustment' => '0.00'],
+         *     ['value' => 'M', 'priceAdjustment' => '10.00']
+         *   ]]
+         * ]
+         */
+        public ?array $productOptions = [],
     )
     {
     }

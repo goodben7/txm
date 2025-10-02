@@ -31,8 +31,39 @@ class ProductManager
         $product->setIsVerified($model->isVerified);
         $product->setCurrency($model->currency);
         $product->setCreatedAt(new \DateTimeImmutable());
-       
+        
+        // Persist the product first to get an ID
         $this->em->persist($product);
+        
+        // Process product options if provided
+        if (!empty($model->productOptions)) {
+            foreach ($model->productOptions as $optionData) {
+                if (isset($optionData['name'])) {
+                    // Create new product option
+                    $option = new \App\Entity\ProductOption();
+                    $option->setName($optionData['name']);
+                    $option->setProduct($product);
+                    
+                    $this->em->persist($option);
+                    
+                    // Process option values if provided
+                    if (isset($optionData['values']) && is_array($optionData['values'])) {
+                        foreach ($optionData['values'] as $valueData) {
+                            if (isset($valueData['value']) && isset($valueData['priceAdjustment'])) {
+                                // Create new option value
+                                $optionValue = new \App\Entity\ProductOptionValue();
+                                $optionValue->setValue($valueData['value']);
+                                $optionValue->setPriceAdjustment($valueData['priceAdjustment']);
+                                $optionValue->setOptions($option);
+                                
+                                $this->em->persist($optionValue);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
         $this->em->flush();
         
         return $product;

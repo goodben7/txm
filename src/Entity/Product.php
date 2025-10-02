@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\Get;
 use App\Doctrine\IdGenerator;
 use App\Dto\CreateProductDto;
 use ApiPlatform\Metadata\Post;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Patch;
 use App\Dto\ValidateProductDto;
@@ -161,6 +163,18 @@ class Product implements RessourceInterface
     #[ORM\JoinColumn(nullable: true)]
     #[Groups(['product:get', 'product:patch'])]
     private ?ProductType $type = null;
+
+    /**
+     * @var Collection<int, ProductOption>
+     */
+    #[ORM\OneToMany(targetEntity: ProductOption::class, mappedBy: 'product', orphanRemoval: true, cascade: ['persist'], fetch: 'EAGER')]
+    #[Groups(['product:get'])]
+    private Collection $productOptions;
+
+    public function __construct()
+    {
+        $this->productOptions = new ArrayCollection();
+    }
 
     public function getId(): ?string
     {
@@ -449,6 +463,36 @@ class Product implements RessourceInterface
     public function setType(?ProductType $type): static
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ProductOption>
+     */
+    public function getProductOptions(): Collection
+    {
+        return $this->productOptions;
+    }
+
+    public function addProductOption(ProductOption $productOption): static
+    {
+        if (!$this->productOptions->contains($productOption)) {
+            $this->productOptions->add($productOption);
+            $productOption->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProductOption(ProductOption $productOption): static
+    {
+        if ($this->productOptions->removeElement($productOption)) {
+            // set the owning side to null (unless already changed)
+            if ($productOption->getProduct() === $this) {
+                $productOption->setProduct(null);
+            }
+        }
 
         return $this;
     }
